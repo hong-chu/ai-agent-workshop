@@ -88,15 +88,24 @@
   .era-descriptions {
     display: grid;
     grid-template-columns: 3fr 4fr 3.5fr;
+    align-items: stretch;
     gap: 16px;
     margin-bottom: 44px;
   }
+  .era-descriptions > a {
+    display: flex;
+  }
   .era-box {
+    width: 100%;
     padding: 22px 24px;
     border-radius: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
   }
+  .era-box .desc { flex: 1; }
+  .era-box .scroll-hint { margin-top: auto; }
   .era-box:hover { transform: translateY(-3px); }
   .era-box .tag {
     font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
@@ -106,7 +115,7 @@
   .era-box .subtitle-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
   .era-box .tagline { font-size: 14px; font-style: italic; opacity: 0.7; }
   .era-box .years { font-size: 14px; opacity: 0.6; }
-  .era-box .desc { font-size: 14px; line-height: 1.65; color: #94A3B8; }
+  .era-box .desc { font-size: 14px; line-height: 1.65; color: #94A3B8; flex: 1; }
   .era-box .desc b { color: #CBD5E1; font-weight: 600; }
   .era-box .scroll-hint {
     font-size: 11px; margin-top: 10px; opacity: 0.4;
