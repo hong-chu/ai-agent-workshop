@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Part 5: Best Practices — AI Agent Workshop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0B1120;
+    color: #E2E8F0;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === NAV BAR === */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(11,17,32,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 40px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav .brand { font-size: 15px; font-weight: 700; color: #F8FAFC; letter-spacing: -0.3px; }
+  nav .brand span { color: #60A5FA; }
+  nav .links { display: flex; gap: 6px; }
+  nav .links a {
+    font-size: 13px; font-weight: 500; color: #64748B;
+    text-decoration: none; padding: 6px 14px; border-radius: 8px;
+    transition: all 0.2s;
+  }
+  nav .links a:hover { color: #CBD5E1; background: rgba(255,255,255,0.05); }
+  nav .links a.active { color: #F1F5F9; background: rgba(255,255,255,0.08); font-weight: 600; }
+
+  /* === MAIN CONTENT === */
+  .page {
+    max-width: 1200px; margin: 0 auto;
+    padding: 100px 30px 60px;
+    position: relative; z-index: 1;
+  }
+
+  /* === PAGE HEADER === */
+  .part-label {
+    text-align: center; font-size: 12px; font-weight: 700;
+    letter-spacing: 2.5px; color: #10B981;
+    margin-bottom: 12px;
+    animation: fadeInDown 0.6s ease both;
+  }
+  h1 {
+    font-size: 48px; font-weight: 800; text-align: center;
+    color: #F8FAFC; margin-bottom: 8px; letter-spacing: -1px;
+    animation: fadeInDown 0.6s ease 0.1s both;
+  }
+  .sub {
+    text-align: center; font-size: 18px; color: #64748B;
+    margin-bottom: 14px;
+    animation: fadeInDown 0.6s ease 0.15s both;
+  }
+  .intro {
+    text-align: center; font-size: 16px; color: #94A3B8;
+    max-width: 760px; margin: 0 auto 56px; line-height: 1.7;
+    animation: fadeInDown 0.6s ease 0.2s both;
+  }
+
+  /* === SECTION HEADERS === */
+  .section-header { margin-bottom: 32px; }
+  .section-header .section-num {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #475569; margin-bottom: 8px;
+  }
+  .section-header h2 {
+    font-size: 32px; font-weight: 800; color: #F1F5F9;
+    letter-spacing: -0.5px;
+  }
+  .section-header .section-sub {
+    font-size: 15px; color: #64748B; margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* === DIVIDER === */
+  .divider {
+    text-align: center; margin: 72px 0 56px; position: relative;
+  }
+  .divider::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  }
+  .divider span {
+    position: relative; z-index: 1;
+    background: #0B1120;
+    padding: 0 24px;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 2px; color: #475569;
+    text-transform: uppercase;
+  }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === INSIGHT CALLOUT === */
+  .insight {
+    padding: 24px 28px;
+    border-radius: 16px;
+    border: 1px solid rgba(251,191,36,0.15);
+    background: rgba(251,191,36,0.04);
+    margin: 32px 0 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .insight-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #FBBF24; margin-bottom: 8px;
+  }
+  .insight-text {
+    font-size: 15px; color: #CBD5E1; line-height: 1.7;
+  }
+  .insight-text b { color: #F1F5F9; }
+
+  /* === TIP CARDS === */
+  .tip-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .tip-card {
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+  }
+  .tip-icon { font-size: 24px; margin-bottom: 10px; }
+  .tip-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .tip-title {
+    font-size: 17px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 8px;
+  }
+  .tip-desc {
+    font-size: 13.5px; color: #94A3B8; line-height: 1.65;
+  }
+  .tip-desc b { color: #CBD5E1; }
+
+  /* === CODE BLOCK === */
+  .code-block {
+    font-size: 12px; color: #CBD5E1;
+    padding: 16px 20px; border-radius: 10px;
+    background: rgba(0,0,0,0.3); font-family: monospace;
+    line-height: 1.8; margin-top: 14px;
+    border: 1px solid rgba(255,255,255,0.06);
+    overflow-x: auto;
+  }
+  .code-comment { color: #64748B; }
+
+  /* === COMPARISON TABLE === */
+  .cmp-table-wrap {
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .cmp-table { width: 100%; border-collapse: collapse; }
+  .cmp-table th {
+    background: rgba(255,255,255,0.04);
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.5px; color: #94A3B8;
+    padding: 14px 18px; text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .cmp-table td {
+    font-size: 13.5px; color: #CBD5E1;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .cmp-table tr:last-child td { border-bottom: none; }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* === DO / DON'T === */
+  .dodont {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .do-card, .dont-card {
+    padding: 24px;
+    border-radius: 16px;
+  }
+  .do-card {
+    border: 1px solid rgba(52,211,153,0.2);
+    background: rgba(52,211,153,0.03);
+  }
+  .dont-card {
+    border: 1px solid rgba(244,63,94,0.2);
+    background: rgba(244,63,94,0.03);
+  }
+  .do-card .card-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #34D399; margin-bottom: 14px;
+  }
+  .dont-card .card-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #F43F5E; margin-bottom: 14px;
+  }
+  .do-card li, .dont-card li {
+    font-size: 13.5px; line-height: 1.7; margin-bottom: 8px;
+    list-style: none; padding-left: 20px; position: relative;
+  }
+  .do-card li::before { content: '✓'; position: absolute; left: 0; color: #34D399; font-weight: 700; }
+  .dont-card li::before { content: '✗'; position: absolute; left: 0; color: #F43F5E; font-weight: 700; }
+  .do-card li { color: #94A3B8; }
+  .dont-card li { color: #94A3B8; }
+  .do-card li b, .dont-card li b { color: #CBD5E1; }
+
+  /* === FOOTER === */
+  footer {
+    max-width: 1200px; margin: 0 auto; padding: 32px 30px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    position: relative; z-index: 1;
+  }
+  footer .footer-left { font-size: 13px; color: #475569; }
+  .nav-link {
+    font-size: 14px; font-weight: 600;
+    color: #60A5FA; text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-link:hover { color: #93C5FD; }
+  .prev-link::before { content: '← '; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">AI Agent <span>Workshop</span></div>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="AI_Vocabulary.html">Part 0: Vocabulary</a>
+    <a href="AI_Timeline.html">Part 1: AI Evolution</a>
+    <a href="AI_Companies.html">Part 2: Companies</a>
+    <a href="AI_Agents.html">Part 3: Agents</a>
+    <a href="AI_OpenClaw.html">Part 4: OpenClaw</a>
+    <a href="AI_BestPractices.html" class="active">Part 5: Best Practices</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="part-label">PART 5 · PRACTICAL GUIDE</div>
+  <h1>OpenClaw Best Practices</h1>
+  <p class="sub">From setup to production — the guide we wish existed on day one</p>
+  <p class="intro">OpenClaw is powerful out of the box, but getting it to work <b>reliably</b> takes intention. This guide covers everything from installation to multi-agent orchestration — the complete playbook for running a personal AI agent.</p>
+
+  <!-- ================================ -->
+  <!-- SECTION 1: INSTALL                -->
+  <!-- ================================ -->
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <h2>Install: Local vs. Cloud</h2>
+    <div class="section-sub">First decision — where does your agent live?</div>
+  </div>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:28px; max-width:860px;">Before configuring anything, you need to decide <b style="color:#F1F5F9;">where OpenClaw runs</b>. There are two approaches — and many people use both.</p>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px; animation: fadeInUp 0.5s ease 0.3s both;">
+    <div style="padding:24px; border-radius:16px; border:1px solid rgba(96,165,250,0.15); background:rgba(96,165,250,0.03);">
+      <div style="font-size:11px; font-weight:800; letter-spacing:1.5px; color:#60A5FA; margin-bottom:10px;">☁️ CLOUD (VPS / ALWAYS-ON)</div>
+      <div style="font-size:16px; font-weight:700; color:#F1F5F9; margin-bottom:8px;">Run on a Server</div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.65;">
+        Deploy OpenClaw on a VPS (DigitalOcean, Hetzner, AWS). The agent runs <b style="color:#CBD5E1;">24/7</b> — always listening on Discord, proactively running heartbeats, monitoring your email. This is the "always-on assistant" setup. Requires basic server admin skills (SSH, Docker, systemd).
+      </div>
+      <div style="margin-top:12px; font-size:12px; color:#64748B;"><b>Best for:</b> persistent agents, heartbeat monitoring, team use</div>
+    </div>
+    <div style="padding:24px; border-radius:16px; border:1px solid rgba(52,211,153,0.15); background:rgba(52,211,153,0.03);">
+      <div style="font-size:11px; font-weight:800; letter-spacing:1.5px; color:#34D399; margin-bottom:10px;">💻 LOCAL (YOUR MACHINE)</div>
+      <div style="font-size:16px; font-weight:700; color:#F1F5F9; margin-bottom:8px;">Run on Your Computer</div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.65;">
+        Run OpenClaw locally with <code style="color:#CBD5E1; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px;">docker compose up</code>. The agent runs while your machine is on. Two big advantages: <b style="color:#CBD5E1;">Claude doesn't allow OpenClaw to use OAuth</b> — you need API tokens on the server, but locally you can use your Claude subscription plan directly. And crucially, you can use <b style="color:#CBD5E1;">Claude Code (local CLI)</b> to configure and fix OpenClaw — because a doctor can't treat itself.
+      </div>
+      <div style="margin-top:12px; font-size:12px; color:#64748B;"><b>Best for:</b> setup, config, fixing broken agents, using subscription plan</div>
+    </div>
+  </div>
+
+  <div class="insight" style="margin-top:0; margin-bottom:40px;">
+    <div class="insight-label">💡 PRO TIP: USE LOCAL CLAUDE TO CONFIGURE OPENCLAW</div>
+    <div class="insight-text">Run <b>Claude Code</b> (Anthropic's local CLI agent) in your OpenClaw workspace folder. Ask it to write your SOUL.md, fix YAML configs, debug Docker issues, review memory files — all in natural language. Since Claude Code runs on your subscription plan (no API tokens needed), it costs nothing extra. And because it's a <b>separate agent</b>, it can fix problems that OpenClaw itself created — broken configs, corrupted memory, misconfigured skills. You use one AI to build and maintain the other.</div>
+  </div>
+
+  <div class="insight" style="border-color:rgba(16,185,129,0.2); background:rgba(16,185,129,0.04); margin-top:0;">
+    <div class="insight-label" style="color:#10B981;">🔄 THE COMMON SETUP</div>
+    <div class="insight-text"><b>Cloud for running, local for fixing.</b> Deploy your agent on a VPS so it's always on. But when OpenClaw messes up its own config — and it will — <b>it can't fix itself</b>. That's where local Claude comes in. Run Claude Code in your OpenClaw workspace folder to diagnose errors, rewrite broken configs, clean up corrupted memory files, and test new skills. A doctor can't treat itself — you need a separate AI to fix your AI.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 2: CHANNEL                -->
+  <!-- ================================ -->
+  <div class="divider"><span>PICKING YOUR INTERFACE</span></div>
+
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <h2>Choosing the Right Channel</h2>
+    <div class="section-sub">Where do you talk to your agent? This matters more than you'd think.</div>
+  </div>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:28px; max-width:860px;">OpenClaw connects to your agent through a <b style="color:#F1F5F9;">messaging channel</b> — the app where you send and receive messages. The most common options are Discord, Slack, Telegram, and Lark. Not all channels are created equal.</p>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px; animation: fadeInUp 0.5s ease 0.35s both;">
+    <div style="padding:24px; border-radius:16px; border:1px solid rgba(88,101,242,0.25); background:rgba(88,101,242,0.04);">
+      <div style="font-size:11px; font-weight:800; letter-spacing:1.5px; color:#5865F2; margin-bottom:10px;">🏆 RECOMMENDED</div>
+      <div style="font-size:18px; font-weight:700; color:#F1F5F9; margin-bottom:8px;">Discord</div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.65;">
+        Discord is <b style="color:#CBD5E1;">bot-native</b> — it was built from the ground up to support bots alongside human users. Creating a bot takes minutes, the API has generous rate limits, and you get features like threads, reactions, slash commands, and multiple channels out of the box. Most importantly for multi-agent setups: you can run <b style="color:#CBD5E1;">multiple bots in the same server</b>, each in their own channel, and they can even talk to each other.
+      </div>
+      <div style="margin-top:12px; font-size:12px; color:#64748B;"><b>Rate limits:</b> 50 requests/second per bot — more than enough</div>
+    </div>
+    <div style="padding:24px; border-radius:16px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02);">
+      <div style="font-size:11px; font-weight:800; letter-spacing:1.5px; color:#94A3B8; margin-bottom:10px;">ALTERNATIVES</div>
+      <div style="font-size:16px; font-weight:700; color:#F1F5F9; margin-bottom:12px;">Other Channels</div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.65; margin-bottom:10px;">
+        <b style="color:#CBD5E1;">Slack</b> — Great if your team already lives in Slack. Good bot support, but the free tier limits message history and bot interactions.
+      </div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.65; margin-bottom:10px;">
+        <b style="color:#CBD5E1;">Telegram</b> — Simple setup, works well on mobile. Good for personal use. Limited threading and channel management compared to Discord.
+      </div>
+      <div style="font-size:13.5px; color:#F43F5E; line-height:1.65;">
+        <b style="color:#F87171;">Lark</b> — Tempting if you use it for work, but Lark's API rate limits are too restrictive for an always-on agent. Frequent throttling makes it unreliable for anything beyond light use.
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">💡 WHY DISCORD WINS FOR MULTI-AGENT</div>
+    <div class="insight-text">If you're planning to run multiple agents (see Section 08), Discord is the clear winner. You can create a private server with channels like <b>#research</b>, <b>#email</b>, <b>#coding</b>, and <b>#conductor</b> — each with its own bot. Agents can read each other's channels, pass tasks between themselves, and you can watch the whole orchestra work in real time. No other platform makes this as easy.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 3: MODEL SELECTION        -->
+  <!-- ================================ -->
+  <div class="divider"><span>CHOOSING YOUR BRAIN</span></div>
+
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <h2>Choosing the Right Model</h2>
+    <div class="section-sub">OpenClaw doesn't have its own brain — you pick the LLM. Here's how to choose.</div>
+  </div>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:12px; max-width:860px;">OpenClaw supports any LLM via API — Claude, GPT, DeepSeek, Gemini, or even local models. The best setup isn't one model for everything — it's <b style="color:#F1F5F9;">different models for different tasks</b>. OpenClaw lets you configure this per-task.</p>
+
+  <p style="font-size:14px; color:#64748B; margin-bottom:28px;">For live pricing and benchmarks, check <a href="https://pricepertoken.com/leaderboards/openclaw" target="_blank" style="color:#60A5FA; text-decoration:underline;">pricepertoken.com/leaderboards/openclaw</a></p>
+
+  <div class="cmp-table-wrap">
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Best For</th>
+          <th>Tradeoff</th>
+          <th>Cost (per 1M tokens)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b style="color:#A855F7;">Claude Opus 4.6</b></td>
+          <td>The "brain" — complex analysis, research, planning, high-stakes decisions</td>
+          <td>Best quality, slowest, most expensive</td>
+          <td>~$15 in / $75 out</td>
+        </tr>
+        <tr>
+          <td><b style="color:#60A5FA;">Claude Sonnet 4.5</b></td>
+          <td>Daily chat — email, scheduling, writing, general assistant tasks</td>
+          <td>Best balance of quality and speed. Strongest prompt-injection resistance</td>
+          <td>~$3 in / $15 out</td>
+        </tr>
+        <tr>
+          <td><b style="color:#34D399;">GPT-5.3 Codex</b></td>
+          <td>Coding — code generation, debugging, refactoring, technical tasks</td>
+          <td>OpenAI's best coding model. Fast and precise on code</td>
+          <td>~$2 in / $8 out</td>
+        </tr>
+        <tr>
+          <td><b style="color:#FBBF24;">Gemini Flash</b></td>
+          <td>Execution — fast tool calls, simple follow-ups, lightweight tasks</td>
+          <td>Google's speed-optimized model. Very fast, very cheap</td>
+          <td>~$0.10 in / $0.40 out</td>
+        </tr>
+        <tr style="border-top:1px solid rgba(255,255,255,0.06);">
+          <td colspan="4" style="font-size:12px; font-weight:700; letter-spacing:1px; color:#475569; padding-top:16px;">OTHER BUDGET OPTIONS</td>
+        </tr>
+        <tr>
+          <td><b style="color:#94A3B8;">DeepSeek V3.2</b></td>
+          <td>Budget daily use — surprisingly capable for the price</td>
+          <td>10–50x cheaper than Opus. Quality gap on complex reasoning</td>
+          <td>~$0.27 in / $1.10 out</td>
+        </tr>
+        <tr>
+          <td><b style="color:#94A3B8;">Claude Haiku 4.5</b></td>
+          <td>Quick lookups, reminders, simple formatting, classification</td>
+          <td>Anthropic's fastest/cheapest. Great for high-volume low-complexity tasks</td>
+          <td>~$0.80 in / $4 out</td>
+        </tr>
+        <tr>
+          <td><b style="color:#94A3B8;">GPT-4o Mini</b></td>
+          <td>Lightweight chat, simple Q&A, basic summarization</td>
+          <td>OpenAI's budget option. Solid quality for simple tasks</td>
+          <td>~$0.15 in / $0.60 out</td>
+        </tr>
+        <tr>
+          <td><b style="color:#94A3B8;">Local (Llama, Qwen)</b></td>
+          <td>Privacy-sensitive tasks, offline use, unlimited tokens</td>
+          <td>Free, fully private. Weaker than cloud models, requires good hardware</td>
+          <td>Free (hardware cost)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">💡 RECOMMENDED SETUP: 4-MODEL ROUTING</div>
+    <div class="insight-text">The best practice is to assign the right model for each job: <b>Claude Opus</b> as the brain for research, analysis, and complex decisions. <b>Claude Sonnet</b> for daily chat — email, scheduling, writing. <b>GPT-5.3 Codex</b> for all coding tasks. <b>Gemini Flash</b> for fast execution — simple tool calls, quick follow-ups, and lightweight tasks. This 4-model setup gives you top-tier quality where it matters and keeps costs manageable by using cheaper models for routine work.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 4: SOUL.md               -->
+  <!-- ================================ -->
+  <div class="divider"><span>DEFINING YOUR AGENT</span></div>
+
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <h2>Writing a Great SOUL.md</h2>
+    <div class="section-sub">Your agent is only as good as its soul — here's how to write one that works</div>
+  </div>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:28px; max-width:860px;">SOUL.md is loaded at the start of every conversation. It defines your agent's personality, values, communication style, and boundaries. Most effective souls are <b style="color:#F1F5F9;">50–150 lines</b>. Shorter and the agent lacks direction; longer and it starts ignoring things.</p>
+
+  <div class="dodont">
+    <div class="do-card">
+      <div class="card-label">✅ DO THIS</div>
+      <ul>
+        <li><b>Be specific:</b> "Reply in 2–3 sentences max" beats "be concise"</li>
+        <li><b>Define boundaries:</b> "Never send an email without asking me first"</li>
+        <li><b>Set tone:</b> "Skip filler phrases like 'Great question!' — just answer"</li>
+        <li><b>Prioritize values:</b> "You value: accuracy > speed > politeness"</li>
+        <li><b>Include context:</b> "I work in fintech. Assume I know what an API is"</li>
+        <li><b>Iterate:</b> Have it draft an email, give feedback, tweak the soul</li>
+      </ul>
+    </div>
+    <div class="dont-card">
+      <div class="card-label">❌ DON'T DO THIS</div>
+      <ul>
+        <li><b>Vague instructions:</b> "Be helpful and friendly" — every LLM already does this</li>
+        <li><b>Contradictions:</b> "Be extremely thorough" + "Keep replies short"</li>
+        <li><b>Overloading:</b> 500+ line souls get ignored past the first few sections</li>
+        <li><b>No personality:</b> A generic soul = a generic assistant. Have opinions.</li>
+        <li><b>Forgetting boundaries:</b> Without explicit limits, the agent will try everything</li>
+        <li><b>Set and forget:</b> Your soul should evolve as you learn what works</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="font-size:14px; color:#64748B; margin-bottom:12px; font-weight:600;">EXAMPLE: A well-structured SOUL.md</p>
+  <div class="code-block" style="margin-bottom:48px;">
+    <span class="code-comment"># Soul</span><br><br>
+    You are a sharp, direct assistant for a senior engineer.<br>
+    Never use corporate jargon or filler phrases.<br>
+    Prefer short answers (2-3 sentences) unless I ask for detail.<br><br>
+    <span class="code-comment"># Values</span><br>
+    accuracy > speed > politeness<br>
+    When unsure, say so. Don't guess.<br><br>
+    <span class="code-comment"># Boundaries</span><br>
+    Never send emails, messages, or calendar invites without explicit approval.<br>
+    Never delete files. Move to a "to-delete" folder instead.<br>
+    If a task involves spending money, always ask first.<br><br>
+    <span class="code-comment"># Communication</span><br>
+    Default language: English. Greet in Korean (안녕하세요).<br>
+    Format: use markdown for structure, but keep it minimal.<br>
+    If I send a single word like "email" or "calendar", treat it as<br>
+    "check my email" or "what's on my calendar today".<br><br>
+    <span class="code-comment"># Context</span><br>
+    I work at a tech company. I know programming concepts.<br>
+    My manager is Lisa. My team works on the payments platform.<br>
+    Our sprint ends every other Friday.
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 5: SKILLS                 -->
+  <!-- ================================ -->
+  <div class="divider"><span>SETTING UP SKILLS</span></div>
+
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <h2>Skills: What to Install and How</h2>
+    <div class="section-sub">ClawHub has 13,700+ skills — here's how to pick the right ones safely</div>
+  </div>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:12px; max-width:860px;">A <b style="color:#F1F5F9;">skill</b> is a knowledge file — a set of best practices, instructions, and examples that teach your agent <i>how</i> to do something well. Unlike tools (which give the agent new abilities like "search the web"), skills give it <b style="color:#F1F5F9;">expertise</b>. Think of it this way: a tool is a hammer, a skill is knowing which nail to hit and how hard. (For a deeper explanation, see <a href="AI_Vocabulary.html" style="color:#60A5FA; text-decoration:underline;">Part 0: Vocabulary</a> and <a href="AI_Agents.html" style="color:#60A5FA; text-decoration:underline;">Part 3: Agents</a>.)</p>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:12px; max-width:860px;">OpenClaw ships with <b style="color:#F1F5F9;">53 bundled skills</b> that are safe to use immediately. Beyond that, ClawHub is the community skill marketplace with 13,700+ skills. Think of it like an app store — powerful, but not everything on it is trustworthy.</p>
+
+  <p style="font-size:14px; color:#64748B; margin-bottom:28px;">Browse and search skills at <a href="https://clawhub.ai/skills?sort=downloads" target="_blank" style="color:#60A5FA; text-decoration:underline;">clawhub.ai/skills</a> (sorted by downloads)</p>
+
+  <div class="insight" style="border-color:rgba(16,185,129,0.2); background:rgba(16,185,129,0.04); margin-top:0; margin-bottom:32px;">
+    <div class="insight-label" style="color:#10B981;">🏷️ START WITH OFFICIAL SKILLS</div>
+    <div class="insight-text">Always install <b>official skills first</b> — the ones created by <b>Peter Steinberger</b> (OpenClaw's creator). These are battle-tested, regularly updated, and guaranteed not to contain malicious code. Look for the verified badge on ClawHub. Third-party community skills can be great too, but vet them before installing.</div>
+  </div>
+
+  <p style="font-size:14px; font-weight:700; color:#F1F5F9; margin-bottom:16px;">Our recommended starter kit</p>
+  <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:20px; animation: fadeInUp 0.5s ease 0.35s both;">
+    <div class="tip-card">
+      <div class="tip-icon">📧</div>
+      <div class="tip-label" style="color:#60A5FA;">ESSENTIAL · OFFICIAL</div>
+      <div class="tip-title">GOG (Google Workspace)</div>
+      <div class="tip-desc">The most downloaded skill on ClawHub. Gives your agent access to <b>Gmail, Calendar, Drive, Contacts, Sheets, and Docs</b>. One skill covers most daily workflows. Install this first.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🔍</div>
+      <div class="tip-label" style="color:#60A5FA;">ESSENTIAL · OFFICIAL</div>
+      <div class="tip-title">Tavily Web Search</div>
+      <div class="tip-desc">A search tool built specifically for AI agents. Fast, reliable web search that returns structured data the agent can work with. Essential for any research, fact-checking, or information-gathering task.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🔎</div>
+      <div class="tip-label" style="color:#60A5FA;">ESSENTIAL · OFFICIAL</div>
+      <div class="tip-title">Find Skills</div>
+      <div class="tip-desc">Lets your agent <b>search ClawHub and install new skills by itself</b>. When asked to do something it doesn't know how, the agent can find and load the right skill on the fly. Meta but powerful.</div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:20px; animation: fadeInUp 0.5s ease 0.4s both;">
+    <div class="tip-card">
+      <div class="tip-icon">🌐</div>
+      <div class="tip-label" style="color:#FBBF24;">RECOMMENDED · OFFICIAL</div>
+      <div class="tip-title">Agent Browser</div>
+      <div class="tip-desc">Puppeteer-based browser control. Your agent can navigate websites, fill forms, compare prices, and extract data. Slower than API-based skills, but essential for tasks where no direct API exists.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🧠</div>
+      <div class="tip-label" style="color:#FBBF24;">RECOMMENDED · OFFICIAL</div>
+      <div class="tip-title">Self-Improving Agent</div>
+      <div class="tip-desc">The agent <b>analyzes its own mistakes</b> and automatically updates its SOUL.md and memory to prevent repeating them. Like a built-in feedback loop. Especially useful during the first few weeks of setup.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🛠️</div>
+      <div class="tip-label" style="color:#FBBF24;">RECOMMENDED · OFFICIAL</div>
+      <div class="tip-title">Skill Creator</div>
+      <div class="tip-desc">Write, test, and publish your own skills. When you find yourself repeating the same instructions, turn them into a reusable skill. This is how the ClawHub ecosystem was built — by users creating skills for their own workflows.</div>
+    </div>
+  </div>
+
+  <div class="insight" style="margin-bottom:32px;">
+    <div class="insight-label">💡 THE 80/20 RULE</div>
+    <div class="insight-text"><b>GOG + Tavily + Find Skills</b> covers about 80% of what most people need an agent to do. Start with those three, use the agent for a week, and then add more skills as you hit specific gaps. Don't install 20 skills on day one — each skill adds to the prompt size and can slow things down.</div>
+  </div>
+
+  <div class="dodont">
+    <div class="do-card">
+      <div class="card-label">✅ SKILL SAFETY</div>
+      <ul>
+        <li><b>Start with official skills</b> — created by Peter Steinberger, verified on ClawHub</li>
+        <li><b>Read the code</b> before enabling any third-party skill</li>
+        <li><b>Check download count and reviews</b> on ClawHub</li>
+        <li><b>Watch for typosquatting</b> — "gogle-workspace" vs "google-workspace"</li>
+      </ul>
+    </div>
+    <div class="dont-card">
+      <div class="card-label">⚠️ SKILL RISKS</div>
+      <ul>
+        <li><b>ClawHavoc attack:</b> Hundreds of malicious skills were found on ClawHub using fake names</li>
+        <li><b>Hidden scripts</b> in skills can exfiltrate SSH keys, API tokens, and cookies</li>
+        <li><b>No mandatory code review</b> for published skills — trust is community-based</li>
+        <li><b>Treat third-party skills like npm packages</b> — useful but verify first</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 5b: SKILL ANATOMY         -->
+  <!-- ================================ -->
+  <div class="divider"><span>UNDER THE HOOD</span></div>
+
+  <div class="section-header">
+    <div class="section-num">05b</div>
+    <h2>What a Skill Looks Like</h2>
+    <div class="section-sub">Skills aren't magic — they're just text files. Here's how they work and how to write your own.</div>
+  </div>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:28px; max-width:860px;">A skill is a folder containing a <b style="color:#F1F5F9;">SKILL.md</b> file — a plain text document with instructions that get loaded into the agent's prompt when the skill is activated. That's it. No compiled code, no executables, no APIs. Just a markdown file that tells the LLM how to do something well.</p>
+
+  <p style="font-size:14px; color:#64748B; margin-bottom:12px; font-weight:600;">ANATOMY OF A SKILL</p>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px; animation: fadeInUp 0.5s ease 0.35s both;">
+    <div>
+      <div class="code-block" style="font-size:11.5px; line-height:1.7;">
+        <span class="code-comment"># my-email-skill/</span><br>
+        <span class="code-comment">#   SKILL.md          ← the actual skill</span><br>
+        <span class="code-comment">#   README.md          ← description for ClawHub</span><br>
+        <span class="code-comment">#   examples/           ← optional examples</span><br><br>
+        <span style="color:#FBBF24;">---</span><br>
+        <span style="color:#FBBF24;">name: email-drafting</span><br>
+        <span style="color:#FBBF24;">description: Draft professional emails</span><br>
+        <span style="color:#FBBF24;">triggers: [email, draft, compose, write]</span><br>
+        <span style="color:#FBBF24;">version: 1.2.0</span><br>
+        <span style="color:#FBBF24;">author: peter-steinberger</span><br>
+        <span style="color:#FBBF24;">---</span><br><br>
+        <span class="code-comment"># Email Drafting Skill</span><br><br>
+        When asked to draft an email:<br>
+        1. Ask who it's for, the topic, and the tone<br>
+        2. Write a subject line first (max 8 words)<br>
+        3. Keep the body under 150 words<br>
+        4. Never use "I hope this finds you well"<br>
+        5. End with a clear call to action<br><br>
+        <span class="code-comment"># Tone Guidelines</span><br>
+        - **Manager**: direct, concise, bullet points<br>
+        - **Client**: warm, professional, solution-focused<br>
+        - **Team**: casual, action-oriented<br><br>
+        <span class="code-comment"># Examples</span><br>
+        [See examples/ folder for samples]
+      </div>
+    </div>
+    <div>
+      <div style="padding:20px; border-radius:14px; border:1px solid rgba(96,165,250,0.15); background:rgba(96,165,250,0.03); margin-bottom:16px;">
+        <div style="font-size:13px; font-weight:700; color:#60A5FA; margin-bottom:8px;">FRONTMATTER (YAML header)</div>
+        <div style="font-size:13px; color:#94A3B8; line-height:1.6;">The <code style="color:#CBD5E1; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px;">---</code> block at the top. Contains metadata: name, description, trigger words, version, author. OpenClaw uses <b style="color:#CBD5E1;">triggers</b> to decide when to activate this skill — if a user says "draft an email," the trigger word "email" matches.</div>
+      </div>
+      <div style="padding:20px; border-radius:14px; border:1px solid rgba(52,211,153,0.15); background:rgba(52,211,153,0.03); margin-bottom:16px;">
+        <div style="font-size:13px; font-weight:700; color:#34D399; margin-bottom:8px;">INSTRUCTIONS (the body)</div>
+        <div style="font-size:13px; color:#94A3B8; line-height:1.6;">Step-by-step rules that get injected into the LLM's prompt. Write them like you're training a new employee — clear, specific, with examples. The better your instructions, the better the output.</div>
+      </div>
+      <div style="padding:20px; border-radius:14px; border:1px solid rgba(251,191,36,0.15); background:rgba(251,191,36,0.03);">
+        <div style="font-size:13px; font-weight:700; color:#FBBF24; margin-bottom:8px;">EXAMPLES (optional)</div>
+        <div style="font-size:13px; color:#94A3B8; line-height:1.6;">Concrete input/output examples help the LLM learn the pattern. Especially useful for formatting-sensitive tasks (emails, reports, code style).</div>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size:14px; font-weight:700; color:#F1F5F9; margin-bottom:16px;">Writing your own skill in 3 steps</p>
+  <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:32px; animation: fadeInUp 0.5s ease 0.35s both;">
+    <div style="padding:20px; border-radius:14px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); text-align:center;">
+      <div style="font-size:28px; font-weight:800; color:#60A5FA; margin-bottom:8px;">1</div>
+      <div style="font-size:15px; font-weight:700; color:#F1F5F9; margin-bottom:6px;">Notice a pattern</div>
+      <div style="font-size:13px; color:#94A3B8; line-height:1.6;">You keep giving the same instructions over and over — "write it in this format," "check these things first," "follow these rules."</div>
+    </div>
+    <div style="padding:20px; border-radius:14px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); text-align:center;">
+      <div style="font-size:28px; font-weight:800; color:#A855F7; margin-bottom:8px;">2</div>
+      <div style="font-size:15px; font-weight:700; color:#F1F5F9; margin-bottom:6px;">Write a SKILL.md</div>
+      <div style="font-size:13px; color:#94A3B8; line-height:1.6;">Put those instructions in a SKILL.md file with a YAML header. Add triggers, examples, and edge cases. Use the <b style="color:#CBD5E1;">Skill Creator</b> skill to help you write it.</div>
+    </div>
+    <div style="padding:20px; border-radius:14px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); text-align:center;">
+      <div style="font-size:28px; font-weight:800; color:#34D399; margin-bottom:8px;">3</div>
+      <div style="font-size:15px; font-weight:700; color:#F1F5F9; margin-bottom:6px;">Test and iterate</div>
+      <div style="font-size:13px; color:#94A3B8; line-height:1.6;">Load the skill, try it with real tasks, and refine. Good skills go through 3–5 rounds of revision before they're solid. Publish to ClawHub when it's ready.</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">💡 THE META TRICK</div>
+    <div class="insight-text">Use the <b>Skill Creator</b> skill to write skills. Tell it "I want a skill that helps me write weekly reports" and it will generate the SKILL.md for you, including frontmatter, triggers, and examples. Then iterate on the output. It's skills all the way down.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 4: SECURITY               -->
+  <!-- ================================ -->
+  <div class="divider"><span>LOCKING IT DOWN</span></div>
+
+  <div class="section-header">
+    <div class="section-num">06</div>
+    <h2>Security Hardening</h2>
+    <div class="section-sub">Your agent has access to your computer — treat it accordingly</div>
+  </div>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:28px; max-width:860px;">OpenClaw runs on your machine with significant permissions. A misconfigured instance is an open door. These aren't optional suggestions — they're the minimum for safe operation.</p>
+
+  <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:48px; animation: fadeInUp 0.5s ease 0.35s both;">
+
+    <div style="padding:20px 24px; border-radius:14px; border:1px solid rgba(244,63,94,0.15); background:rgba(244,63,94,0.03); display:flex; gap:16px; align-items:flex-start;">
+      <div style="font-size:22px; flex-shrink:0; margin-top:2px;">🔒</div>
+      <div>
+        <div style="font-size:16px; font-weight:700; color:#F1F5F9; margin-bottom:4px;">Never run as root</div>
+        <div style="font-size:13.5px; color:#94A3B8; line-height:1.65;">Create a dedicated non-root user for OpenClaw with minimal permissions. If the agent gets compromised, the blast radius is limited to that user's access.</div>
+      </div>
+    </div>
+
+    <div style="padding:20px 24px; border-radius:14px; border:1px solid rgba(244,63,94,0.15); background:rgba(244,63,94,0.03); display:flex; gap:16px; align-items:flex-start;">
+      <div style="font-size:22px; flex-shrink:0; margin-top:2px;">🔐</div>
+      <div>
+        <div style="font-size:16px; font-weight:700; color:#F1F5F9; margin-bottom:4px;">Lock down your secrets</div>
+        <div style="font-size:13.5px; color:#94A3B8; line-height:1.65;">Use environment variables for API keys and tokens — never put them in config files. Set your state directory to <code style="color:#CBD5E1; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px;">chmod 700</code> so only the OpenClaw user can read secrets and sessions.</div>
+      </div>
+    </div>
+
+    <div style="padding:20px 24px; border-radius:14px; border:1px solid rgba(244,63,94,0.15); background:rgba(244,63,94,0.03); display:flex; gap:16px; align-items:flex-start;">
+      <div style="font-size:22px; flex-shrink:0; margin-top:2px;">🌐</div>
+      <div>
+        <div style="font-size:16px; font-weight:700; color:#F1F5F9; margin-bottom:4px;">Never expose to the public internet</div>
+        <div style="font-size:13.5px; color:#94A3B8; line-height:1.65;">Don't bind to <code style="color:#CBD5E1; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px;">0.0.0.0</code> and don't set up a public reverse proxy. OpenClaw is not hardened for public exposure. If you need remote access, use an SSH tunnel or Tailscale.</div>
+      </div>
+    </div>
+
+    <div style="padding:20px 24px; border-radius:14px; border:1px solid rgba(244,63,94,0.15); background:rgba(244,63,94,0.03); display:flex; gap:16px; align-items:flex-start;">
+      <div style="font-size:22px; flex-shrink:0; margin-top:2px;">🧩</div>
+      <div>
+        <div style="font-size:16px; font-weight:700; color:#F1F5F9; margin-bottom:4px;">Vet every skill</div>
+        <div style="font-size:13.5px; color:#94A3B8; line-height:1.65;">Only load skills you explicitly trust. Read the source code of any third-party skill before enabling it. Skills declare what permissions they need — review and approve each one explicitly.</div>
+      </div>
+    </div>
+
+    <div style="padding:20px 24px; border-radius:14px; border:1px solid rgba(244,63,94,0.15); background:rgba(244,63,94,0.03); display:flex; gap:16px; align-items:flex-start;">
+      <div style="font-size:22px; flex-shrink:0; margin-top:2px;">🧠</div>
+      <div>
+        <div style="font-size:16px; font-weight:700; color:#F1F5F9; margin-bottom:4px;">Use instruction-hardened models</div>
+        <div style="font-size:13.5px; color:#94A3B8; line-height:1.65;">Claude Sonnet has the best prompt-injection resistance of any current model. For an agent with tool access, this matters — a model that can be tricked by a malicious email is a model that can be weaponized.</div>
+      </div>
+    </div>
+
+    <div style="padding:20px 24px; border-radius:14px; border:1px solid rgba(244,63,94,0.15); background:rgba(244,63,94,0.03); display:flex; gap:16px; align-items:flex-start;">
+      <div style="font-size:22px; flex-shrink:0; margin-top:2px;">📋</div>
+      <div>
+        <div style="font-size:16px; font-weight:700; color:#F1F5F9; margin-bottom:4px;">Add safety boundaries to SOUL.md</div>
+        <div style="font-size:13.5px; color:#94A3B8; line-height:1.65;">Your soul file should include explicit boundaries: "Never execute shell commands without approval. Never send money. Never delete files permanently. Never share my credentials." The LLM follows what the soul says — so tell it.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight" style="border-color:rgba(244,63,94,0.2); background:rgba(244,63,94,0.04);">
+    <div class="insight-label" style="color:#F43F5E;">⚠️ THE UNCOMFORTABLE TRUTH</div>
+    <div class="insight-text">No amount of hardening makes OpenClaw 100% safe. You are giving an AI agent access to your computer, your email, your files, and your accounts. The agent is only as trustworthy as the LLM driving it — and LLMs can be tricked. Use OpenClaw with the same caution you'd use when giving a new employee access to your systems: <b>start with limited permissions and expand slowly as trust builds</b>.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 5: DAILY HABITS           -->
+  <!-- ================================ -->
+  <div class="divider"><span>MAKING IT STICK</span></div>
+
+  <div class="section-header">
+    <div class="section-num">07</div>
+    <h2>Daily Habits for Power Users</h2>
+    <div class="section-sub">The difference between "I tried OpenClaw" and "OpenClaw changed how I work"</div>
+  </div>
+
+  <div class="tip-grid">
+    <div class="tip-card">
+      <div class="tip-icon">🌅</div>
+      <div class="tip-label" style="color:#FBBF24;">MORNING</div>
+      <div class="tip-title">Start with a Check-In</div>
+      <div class="tip-desc">Text your agent "morning" or "what's up today?" first thing. A good HEARTBEAT.md means it already checked your email and calendar. You get a brief of what needs attention — before you open a single app.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🔄</div>
+      <div class="tip-label" style="color:#60A5FA;">WEEKLY</div>
+      <div class="tip-title">Review Your Memory Files</div>
+      <div class="tip-desc">Skim <code style="color:#CBD5E1; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px;">memory/</code> once a week. Delete junk entries that add noise. Pin important context that keeps getting forgotten. Your agent's memory is only as clean as you keep it.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🎯</div>
+      <div class="tip-label" style="color:#34D399;">ONGOING</div>
+      <div class="tip-title">Iterate on SOUL.md</div>
+      <div class="tip-desc">When the agent does something you don't like, <b>don't just correct it once</b> — update SOUL.md so it never does it again. Each correction is a permanent improvement. Some users tweak weekly; others monthly.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">📊</div>
+      <div class="tip-label" style="color:#A855F7;">ONGOING</div>
+      <div class="tip-title">Watch Your Token Usage</div>
+      <div class="tip-desc">Monitor API costs. If your agent burns through tokens on simple tasks, you might need to tune model routing (use cheaper models for easy stuff) or trim your SOUL.md and memory files to reduce prompt size.</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">🎯 THE ONE HABIT THAT MATTERS MOST</div>
+    <div class="insight-text">Every time the agent does something wrong, ask yourself: <b>"Is this a soul problem, a skill problem, or a model problem?"</b> Soul problem → update SOUL.md. Skill problem → find a better skill or configure the current one. Model problem → switch to a stronger model for that task. This mental framework turns frustration into systematic improvement.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 6: MULTI-AGENT            -->
+  <!-- ================================ -->
+  <div class="divider"><span>SCALING UP</span></div>
+
+  <div class="section-header">
+    <div class="section-num">08</div>
+    <h2>Multi-Agent Orchestra</h2>
+    <div class="section-sub">Why one agent is good, but multiple agents working together is transformational</div>
+  </div>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:28px; max-width:860px;">A single OpenClaw agent can do a lot. But real power comes when you run <b style="color:#F1F5F9;">multiple specialized agents</b> that coordinate — like a team where each member has a different job. This is the "multi-agent orchestra" pattern.</p>
+
+  <!-- WHY -->
+  <p style="font-size:14px; font-weight:700; color:#F1F5F9; margin-bottom:16px;">Why multiple agents?</p>
+  <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:32px; animation: fadeInUp 0.5s ease 0.35s both;">
+    <div style="padding:20px; border-radius:14px; border:1px solid rgba(96,165,250,0.15); background:rgba(96,165,250,0.03);">
+      <div style="font-size:20px; margin-bottom:8px;">🎯</div>
+      <div style="font-size:15px; font-weight:700; color:#F1F5F9; margin-bottom:6px;">Specialization</div>
+      <div style="font-size:13px; color:#94A3B8; line-height:1.6;">A "research agent" with a long SOUL.md focused on thoroughness works better than a generalist asked to research. Each agent has its own soul, memory, and model tuned for one job.</div>
+    </div>
+    <div style="padding:20px; border-radius:14px; border:1px solid rgba(165,85,247,0.15); background:rgba(165,85,247,0.03);">
+      <div style="font-size:20px; margin-bottom:8px;">🧱</div>
+      <div style="font-size:15px; font-weight:700; color:#F1F5F9; margin-bottom:6px;">Isolation</div>
+      <div style="font-size:13px; color:#94A3B8; line-height:1.6;">If your coding agent goes haywire, it doesn't affect your email agent. Separate agents mean separate failure domains, separate memory, and separate permissions.</div>
+    </div>
+    <div style="padding:20px; border-radius:14px; border:1px solid rgba(251,191,36,0.15); background:rgba(251,191,36,0.03);">
+      <div style="font-size:20px; margin-bottom:8px;">💰</div>
+      <div style="font-size:15px; font-weight:700; color:#F1F5F9; margin-bottom:6px;">Cost Efficiency</div>
+      <div style="font-size:13px; color:#94A3B8; line-height:1.6;">Your email summarizer runs on cheap Gemini Flash. Your research agent runs on Opus. You only pay for expensive models where they're actually needed.</div>
+    </div>
+  </div>
+
+  <!-- HOW -->
+  <p style="font-size:14px; font-weight:700; color:#F1F5F9; margin-bottom:16px;">How it works in practice</p>
+  <div style="padding:24px; border-radius:16px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); margin-bottom:32px; animation: fadeInUp 0.5s ease 0.35s both;">
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:20px;">
+      <div style="padding:10px 18px; border-radius:10px; background:rgba(96,165,250,0.1); border:1px solid rgba(96,165,250,0.2); font-size:13px; font-weight:700; color:#60A5FA;">Conductor Agent</div>
+      <div style="color:#475569; font-size:18px;">→</div>
+      <div style="padding:10px 18px; border-radius:10px; background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.2); font-size:13px; font-weight:600; color:#34D399;">Research Agent</div>
+      <div style="padding:10px 18px; border-radius:10px; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.2); font-size:13px; font-weight:600; color:#FBBF24;">Coding Agent</div>
+      <div style="padding:10px 18px; border-radius:10px; background:rgba(165,85,247,0.1); border:1px solid rgba(165,85,247,0.2); font-size:13px; font-weight:600; color:#A855F7;">Email Agent</div>
+      <div style="padding:10px 18px; border-radius:10px; background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.2); font-size:13px; font-weight:600; color:#F43F5E;">Calendar Agent</div>
+    </div>
+    <div style="font-size:13.5px; color:#94A3B8; line-height:1.7;">
+      A <b style="color:#60A5FA;">conductor agent</b> (your main OpenClaw instance) receives your message and decides which specialist to delegate to. You say "research competitors and draft an email to the team about it" — the conductor sends the first part to the research agent (running Opus for depth), waits for the result, then passes it to the email agent (running Sonnet for tone) to compose the message. Each agent has its own SOUL.md, its own skills, and its own model.
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">💡 START SIMPLE</div>
+    <div class="insight-text">Don't build an orchestra on day one. Start with a single well-configured agent. Once it's working well, <b>fork it</b> — duplicate the workspace, specialize the SOUL.md, assign a different model, and connect them. Most users find that <b>2–3 specialized agents</b> (e.g., daily assistant + research + coding) hit the sweet spot before complexity outweighs the benefit.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 7: QUICK CHECKLIST        -->
+  <!-- ================================ -->
+  <div class="divider"><span>THE CHECKLIST</span></div>
+
+  <div class="section-header">
+    <div class="section-num">09</div>
+    <h2>Setup Checklist</h2>
+    <div class="section-sub">Everything in one place — save this for reference</div>
+  </div>
+
+  <div class="cmp-table-wrap" style="margin-bottom:48px;">
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th style="width:40px;">✓</th>
+          <th>Step</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><b style="color:#F1F5F9;">Write SOUL.md</b> (50–150 lines)</td>
+          <td>Defines who your agent is. Start with values, tone, and boundaries.</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><b style="color:#F1F5F9;">Write USER.md</b></td>
+          <td>Your name, role, preferences. Personalization starts here.</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><b style="color:#F1F5F9;">Choose a primary model</b></td>
+          <td>Claude Sonnet for most users. Add model routing later.</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><b style="color:#F1F5F9;">Install GOG + Tavily skills</b></td>
+          <td>Google Workspace + web search covers 80% of daily tasks.</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><b style="color:#F1F5F9;">Write HEARTBEAT.md</b></td>
+          <td>What should the agent watch for? Email from manager, upcoming meetings, etc.</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><b style="color:#F1F5F9;">Lock down permissions</b></td>
+          <td>Non-root user, chmod 700, env vars for secrets, no public exposure.</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><b style="color:#F1F5F9;">Test with a low-stakes task</b></td>
+          <td>Try "summarize my unread emails" before "send a reply to my manager."</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><b style="color:#F1F5F9;">Iterate for a week</b></td>
+          <td>Use it daily. Update SOUL.md after each friction point. Trust builds with use.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight" style="border-color:rgba(16,185,129,0.2); background:rgba(16,185,129,0.04);">
+    <div class="insight-label" style="color:#10B981;">🚀 FINAL THOUGHT</div>
+    <div class="insight-text">OpenClaw isn't magic — it's a system. Like any system, it rewards those who invest time in setting it up well. The difference between a frustrating AI toy and a genuinely useful personal agent is about <b>30 minutes of thoughtful configuration</b>. Write a great soul, pick the right model, install trusted skills, lock down security, and iterate. That's it.</div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="AI_OpenClaw.html" class="nav-link prev-link">Part 4: OpenClaw</a>
+  <div class="footer-left"><b>AI Agent Workshop</b> · Week 1</div>
+</footer>
+
+</body>
+</html>
