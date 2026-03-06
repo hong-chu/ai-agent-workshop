@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent Workshop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0B1120;
+    color: #E2E8F0;
+  }
+
+  /* === BACKGROUND PATTERN === */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === NAV BAR === */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(11,17,32,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 40px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav .brand {
+    font-size: 15px; font-weight: 700; color: #F8FAFC;
+    letter-spacing: -0.3px;
+  }
+  nav .brand span { color: #60A5FA; }
+  nav .links { display: flex; gap: 6px; }
+  nav .links a {
+    font-size: 13px; font-weight: 500; color: #64748B;
+    text-decoration: none; padding: 6px 14px; border-radius: 8px;
+    transition: all 0.2s;
+  }
+  nav .links a:hover { color: #CBD5E1; background: rgba(255,255,255,0.05); }
+  nav .links a.active {
+    color: #F1F5F9; background: rgba(255,255,255,0.08);
+    font-weight: 600;
+  }
+
+  /* === MAIN CONTENT === */
+  .page {
+    max-width: 1200px; margin: 0 auto;
+    padding: 100px 30px 60px;
+    position: relative; z-index: 1;
+  }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  /* === HERO === */
+  .hero {
+    text-align: center;
+    padding: 80px 0 60px;
+  }
+  .hero-badge {
+    display: inline-block;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 2px; color: #60A5FA;
+    padding: 8px 20px;
+    border-radius: 100px;
+    border: 1px solid rgba(96,165,250,0.2);
+    background: rgba(96,165,250,0.06);
+    margin-bottom: 28px;
+    animation: fadeInDown 0.6s ease both;
+  }
+  .hero h1 {
+    font-size: 64px; font-weight: 900;
+    color: #F8FAFC;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    animation: fadeInDown 0.6s ease 0.1s both;
+  }
+  .hero h1 .gradient {
+    background: linear-gradient(135deg, #60A5FA, #A855F7, #F43F5E);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero .tagline {
+    font-size: 20px; color: #64748B;
+    max-width: 600px; margin: 0 auto 40px;
+    line-height: 1.6;
+    animation: fadeInDown 0.6s ease 0.2s both;
+  }
+  .hero .meta {
+    font-size: 13px; color: #475569;
+    animation: fadeInDown 0.6s ease 0.25s both;
+  }
+  .hero .meta b { color: #94A3B8; }
+
+  /* === PARTS GRID === */
+  .parts-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .parts-header h2 {
+    font-size: 13px; font-weight: 800;
+    letter-spacing: 2px; color: #475569;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .parts-header p {
+    font-size: 15px; color: #64748B;
+  }
+
+  .parts-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 72px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .part-card {
+    padding: 28px 22px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    text-decoration: none;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  .part-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+  .part-card .card-num {
+    font-size: 11px; font-weight: 800;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+  }
+  .part-card .card-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .part-card .card-title {
+    font-size: 18px; font-weight: 800;
+    color: #F1F5F9;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+  .part-card .card-desc {
+    font-size: 13px; color: #94A3B8;
+    line-height: 1.6;
+    flex: 1;
+  }
+  .part-card .card-arrow {
+    margin-top: 16px;
+    font-size: 14px; font-weight: 600;
+    transition: transform 0.2s;
+  }
+  .part-card:hover .card-arrow {
+    transform: translateX(4px);
+  }
+
+  /* === WHAT YOU'LL LEARN === */
+  .learn-section {
+    margin-bottom: 72px;
+    animation: fadeInUp 0.5s ease 0.4s both;
+  }
+  .learn-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .learn-card {
+    padding: 24px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.015);
+  }
+  .learn-icon {
+    font-size: 24px; margin-bottom: 12px;
+  }
+  .learn-title {
+    font-size: 15px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 6px;
+  }
+  .learn-desc {
+    font-size: 13px; color: #94A3B8; line-height: 1.6;
+  }
+
+  /* === DIVIDER === */
+  .divider {
+    text-align: center;
+    margin: 72px 0 48px;
+    position: relative;
+  }
+  .divider::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  }
+  .divider span {
+    position: relative; z-index: 1;
+    background: #0B1120;
+    padding: 0 24px;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 2px; color: #475569;
+    text-transform: uppercase;
+  }
+
+  /* === AUDIENCE === */
+  .audience {
+    text-align: center;
+    margin-bottom: 72px;
+    animation: fadeInUp 0.5s ease 0.45s both;
+  }
+  .audience h3 {
+    font-size: 28px; font-weight: 800; color: #F1F5F9;
+    margin-bottom: 12px; letter-spacing: -0.5px;
+  }
+  .audience p {
+    font-size: 16px; color: #94A3B8; line-height: 1.7;
+    max-width: 640px; margin: 0 auto 28px;
+  }
+  .audience-tags {
+    display: flex; gap: 10px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .audience-tag {
+    font-size: 13px; font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    color: #CBD5E1;
+  }
+
+  /* === CTA === */
+  .cta {
+    text-align: center;
+    padding: 56px 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(96,165,250,0.15);
+    background: linear-gradient(135deg, rgba(96,165,250,0.05), rgba(168,85,247,0.05), rgba(244,63,94,0.05));
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.5s both;
+  }
+  .cta h3 {
+    font-size: 28px; font-weight: 800; color: #F1F5F9;
+    margin-bottom: 12px; letter-spacing: -0.5px;
+  }
+  .cta p {
+    font-size: 15px; color: #94A3B8; margin-bottom: 28px;
+    line-height: 1.6;
+  }
+  .cta-btn {
+    display: inline-block;
+    font-size: 15px; font-weight: 700;
+    color: #F8FAFC;
+    padding: 14px 36px;
+    border-radius: 12px;
+    text-decoration: none;
+    background: linear-gradient(135deg, #3B82F6, #6366F1);
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(59,130,246,0.3);
+  }
+  .cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(59,130,246,0.4);
+  }
+
+  /* === FOOTER === */
+  footer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 30px;
+    display: flex; justify-content: center; align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    position: relative; z-index: 1;
+  }
+  footer .footer-text {
+    font-size: 13px; color: #475569;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">AI Agent <span>Workshop</span></div>
+  <div class="links">
+    <a href="index.html" class="active">Home</a>
+    <a href="AI_Vocabulary.html">Part 0: Vocabulary</a>
+    <a href="AI_Timeline.html">Part 1: AI Evolution</a>
+    <a href="AI_Companies.html">Part 2: Companies</a>
+    <a href="AI_Agents.html">Part 3: Agents</a>
+    <a href="AI_OpenClaw.html">Part 4: OpenClaw</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ================================ -->
+  <!-- HERO                              -->
+  <!-- ================================ -->
+  <div class="hero">
+    <div class="hero-badge">WEEK 1 · MARCH 2026</div>
+    <h1>AI Agent<br><span class="gradient">Workshop</span></h1>
+    <p class="tagline">A crash course in AI agents — from how models work to building systems that reason, act, and learn on their own.</p>
+    <p class="meta">Built for anyone who wants to understand <b>what's actually happening</b> beneath the hype.</p>
+  </div>
+
+  <!-- ================================ -->
+  <!-- CURRICULUM                        -->
+  <!-- ================================ -->
+  <div class="divider"><span>CURRICULUM</span></div>
+
+  <div class="parts-header">
+    <h2>5 Parts · 1 Workshop</h2>
+    <p>Each section builds on the last — start anywhere, but Part 0 helps if you're new</p>
+  </div>
+
+  <div class="parts-grid">
+    <a href="AI_Vocabulary.html" class="part-card">
+      <div class="card-num" style="color:#60A5FA;">PART 0</div>
+      <div class="card-icon">📖</div>
+      <div class="card-title">Vocabulary</div>
+      <div class="card-desc">The essential terms you need before diving in — LLM, tokens, context window, MCP, skills, and more.</div>
+      <div class="card-arrow" style="color:#60A5FA;">Explore →</div>
+    </a>
+    <a href="AI_Timeline.html" class="part-card">
+      <div class="card-num" style="color:#A855F7;">PART 1</div>
+      <div class="card-icon">⏳</div>
+      <div class="card-title">AI Evolution</div>
+      <div class="card-desc">From the 1950s to GPT-5. How we went from rule-based systems to models that reason and use tools.</div>
+      <div class="card-arrow" style="color:#A855F7;">Explore →</div>
+    </a>
+    <a href="AI_Companies.html" class="part-card">
+      <div class="card-num" style="color:#FBBF24;">PART 2</div>
+      <div class="card-icon">🏢</div>
+      <div class="card-title">AI Companies</div>
+      <div class="card-desc">Who's building what. OpenAI, Anthropic, Google, Meta, xAI, DeepSeek — the players and their strategies.</div>
+      <div class="card-arrow" style="color:#FBBF24;">Explore →</div>
+    </a>
+    <a href="AI_Agents.html" class="part-card">
+      <div class="card-num" style="color:#34D399;">PART 3</div>
+      <div class="card-icon">🤖</div>
+      <div class="card-title">AI Agents</div>
+      <div class="card-desc">The main event. How agents work, design patterns, skills vs tools, and the shift from prompts to harnesses.</div>
+      <div class="card-arrow" style="color:#34D399;">Explore →</div>
+    </a>
+    <a href="AI_OpenClaw.html" class="part-card">
+      <div class="card-num" style="color:#F43F5E;">PART 4</div>
+      <div class="card-icon">🦞</div>
+      <div class="card-title">OpenClaw</div>
+      <div class="card-desc">Case study: the open-source agent that broke GitHub records — architecture, security, and what it means.</div>
+      <div class="card-arrow" style="color:#F43F5E;">Explore →</div>
+    </a>
+  </div>
+
+  <!-- ================================ -->
+  <!-- WHAT YOU'LL LEARN                 -->
+  <!-- ================================ -->
+  <div class="divider"><span>WHAT YOU'LL WALK AWAY WITH</span></div>
+
+  <div class="learn-section">
+    <div class="learn-grid">
+      <div class="learn-card">
+        <div class="learn-icon">🧠</div>
+        <div class="learn-title">Mental Models</div>
+        <div class="learn-desc">Understand what a "model" actually is, how tokens work, why context windows matter, and what makes agents different from chatbots.</div>
+      </div>
+      <div class="learn-card">
+        <div class="learn-icon">🗺️</div>
+        <div class="learn-title">Industry Map</div>
+        <div class="learn-desc">Know who's building what — the major AI companies, their flagship models, their strategies, and how they compete.</div>
+      </div>
+      <div class="learn-card">
+        <div class="learn-icon">🔧</div>
+        <div class="learn-title">Agent Architecture</div>
+        <div class="learn-desc">See exactly how an agent works: the loop, tools via MCP, skills, memory, and why the "harness" around the model matters more than the model itself.</div>
+      </div>
+      <div class="learn-card">
+        <div class="learn-icon">📋</div>
+        <div class="learn-title">Tools vs Skills</div>
+        <div class="learn-desc">The distinction that confuses everyone. Tools = what the agent can do. Skills = what it knows about doing it well. Both are essential.</div>
+      </div>
+      <div class="learn-card">
+        <div class="learn-icon">🦞</div>
+        <div class="learn-title">Real Case Study</div>
+        <div class="learn-desc">Deep dive into OpenClaw — the fastest-growing open-source project ever. How it works, why it went viral, and the security debate it triggered.</div>
+      </div>
+      <div class="learn-card">
+        <div class="learn-icon">⚡</div>
+        <div class="learn-title">Where It's Going</div>
+        <div class="learn-desc">The shift from prompt engineering to harness engineering, multi-agent systems, and what the next 12 months will look like.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- WHO IS THIS FOR                   -->
+  <!-- ================================ -->
+  <div class="divider"><span>WHO IS THIS FOR</span></div>
+
+  <div class="audience">
+    <h3>Built for the Curious</h3>
+    <p>You don't need ML experience or a technical background. If you want to understand how AI agents actually work — not the marketing version, the real version — this workshop is for you.</p>
+    <div class="audience-tags">
+      <div class="audience-tag">Engineers</div>
+      <div class="audience-tag">Product Managers</div>
+      <div class="audience-tag">Designers</div>
+      <div class="audience-tag">Business Leaders</div>
+      <div class="audience-tag">Anyone Curious</div>
+    </div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- CTA                               -->
+  <!-- ================================ -->
+  <div class="cta">
+    <h3>Ready to Start?</h3>
+    <p>Part 0 takes 5 minutes and gives you all the vocabulary you need for the rest.</p>
+    <a href="AI_Vocabulary.html" class="cta-btn">Start with Part 0: Vocabulary →</a>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-text"><b>AI Agent Workshop</b> · Week 1 · March 2026</div>
+</footer>
+
+</body>
+</html>

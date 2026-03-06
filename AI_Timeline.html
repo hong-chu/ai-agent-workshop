@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Part 1: Three Eras of Modern AI — AI Agent Workshop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0B1120;
+    color: #E2E8F0;
+    overflow-x: auto;
+  }
+
+  /* === BACKGROUND PATTERN === */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === NAV BAR === */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(11,17,32,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 40px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav .brand {
+    font-size: 15px; font-weight: 700; color: #F8FAFC;
+    letter-spacing: -0.3px;
+  }
+  nav .brand span { color: #60A5FA; }
+  nav .links { display: flex; gap: 6px; }
+  nav .links a {
+    font-size: 13px; font-weight: 500; color: #64748B;
+    text-decoration: none; padding: 6px 14px; border-radius: 8px;
+    transition: all 0.2s;
+  }
+  nav .links a:hover { color: #CBD5E1; background: rgba(255,255,255,0.05); }
+  nav .links a.active {
+    color: #F1F5F9; background: rgba(255,255,255,0.08);
+    font-weight: 600;
+  }
+
+  /* === MAIN CONTENT === */
+  .page {
+    min-width: 1500px; max-width: 1800px; margin: 0 auto;
+    padding: 100px 30px 60px;
+    position: relative; z-index: 1;
+  }
+
+  /* === PAGE HEADER === */
+  .part-label {
+    text-align: center; font-size: 12px; font-weight: 700;
+    letter-spacing: 2.5px; color: #60A5FA;
+    margin-bottom: 12px;
+    animation: fadeInDown 0.6s ease both;
+  }
+  h1 {
+    font-size: 48px; font-weight: 800; text-align: center;
+    color: #F8FAFC; margin-bottom: 8px; letter-spacing: -1px;
+    animation: fadeInDown 0.6s ease 0.1s both;
+  }
+  .sub {
+    text-align: center; font-size: 18px; color: #64748B;
+    margin-bottom: 14px;
+    animation: fadeInDown 0.6s ease 0.15s both;
+  }
+  .intro {
+    text-align: center; font-size: 16px; color: #94A3B8;
+    max-width: 720px; margin: 0 auto 52px; line-height: 1.7;
+    animation: fadeInDown 0.6s ease 0.2s both;
+  }
+
+  /* === ERA DESCRIPTION ROW === */
+  .era-descriptions {
+    display: grid;
+    grid-template-columns: 3fr 4fr 3.5fr;
+    gap: 16px;
+    margin-bottom: 44px;
+  }
+  .era-box {
+    padding: 22px 24px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .era-box:hover { transform: translateY(-3px); }
+  .era-box .tag {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    padding: 4px 12px; border-radius: 6px; display: inline-block; margin-bottom: 10px;
+  }
+  .era-box .title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .era-box .subtitle-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .era-box .tagline { font-size: 14px; font-style: italic; opacity: 0.7; }
+  .era-box .years { font-size: 14px; opacity: 0.6; }
+  .era-box .desc { font-size: 14px; line-height: 1.65; color: #94A3B8; }
+  .era-box .desc b { color: #CBD5E1; font-weight: 600; }
+  .era-box .scroll-hint {
+    font-size: 11px; margin-top: 10px; opacity: 0.4;
+    font-weight: 500; letter-spacing: 0.3px;
+  }
+
+  .era-box.e1 { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); animation: fadeInUp 0.5s ease 0.3s both; }
+  .era-box.e1:hover { border-color: rgba(59,130,246,0.4); box-shadow: 0 8px 32px rgba(59,130,246,0.1); }
+  .era-box.e1 .tag { background: #3B82F6; color: #fff; }
+  .era-box.e1 .title { color: #93C5FD; }
+  .era-box.e1 .tagline { color: #93C5FD; }
+  .era-box.e1 .years { color: #93C5FD; }
+
+  .era-box.e2 { background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.2); animation: fadeInUp 0.5s ease 0.4s both; }
+  .era-box.e2:hover { border-color: rgba(168,85,247,0.4); box-shadow: 0 8px 32px rgba(168,85,247,0.1); }
+  .era-box.e2 .tag { background: #A855F7; color: #fff; }
+  .era-box.e2 .title { color: #D8B4FE; }
+  .era-box.e2 .tagline { color: #D8B4FE; }
+  .era-box.e2 .years { color: #D8B4FE; }
+
+  .era-box.e3 { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); animation: fadeInUp 0.5s ease 0.5s both; }
+  .era-box.e3:hover { border-color: rgba(16,185,129,0.4); box-shadow: 0 8px 32px rgba(16,185,129,0.1); }
+  .era-box.e3 .tag { background: #10B981; color: #fff; }
+  .era-box.e3 .title { color: #6EE7B7; }
+  .era-box.e3 .tagline { color: #6EE7B7; }
+  .era-box.e3 .years { color: #6EE7B7; }
+
+  /* === SINGLE TIMELINE === */
+  .timeline {
+    display: grid;
+    grid-template-columns: repeat(14, 1fr);
+    grid-template-rows: auto 40px auto;
+    gap: 0;
+    animation: fadeIn 0.6s ease 0.7s both;
+  }
+
+  .top {
+    grid-row: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 12px;
+  }
+
+  .mid {
+    grid-row: 2;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mid::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 4px;
+    transform: translateY(-50%);
+    border-radius: 2px;
+  }
+  .mid.c1::before { background: #3B82F6; box-shadow: 0 0 12px rgba(59,130,246,0.3); }
+  .mid.c2::before { background: #A855F7; box-shadow: 0 0 12px rgba(168,85,247,0.3); }
+  .mid.c3::before { background: #10B981; box-shadow: 0 0 12px rgba(16,185,129,0.3); }
+  .mid.t12::before { background: linear-gradient(to right, #3B82F6, #A855F7); box-shadow: 0 0 12px rgba(130,85,200,0.3); }
+  .mid.t23::before { background: linear-gradient(to right, #A855F7, #10B981); box-shadow: 0 0 12px rgba(90,135,190,0.3); }
+
+  .dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    position: relative; z-index: 2; border: 3px solid #0B1120;
+    transition: transform 0.2s;
+  }
+  .dot.big {
+    width: 22px; height: 22px;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  .dot.d-blue { background: #3B82F6; }
+  .dot.d-cyan { background: #06B6D4; }
+  .dot.d-indigo { background: #818CF8; }
+  .dot.d-purple { background: #A855F7; }
+  .dot.d-rose { background: #F472B6; }
+  .dot.d-amber { background: #F59E0B; }
+  .dot.d-green { background: #10B981; }
+  .dot.d-teal { background: #14B8A6; }
+  .dot.d-red { background: #EF4444; }
+
+  .bot {
+    grid-row: 3;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12px;
+  }
+
+  .card {
+    width: 100%;
+    padding: 16px 12px;
+    border-radius: 12px;
+    text-align: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.25s ease;
+  }
+  .card:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+  .card .yr { font-size: 15px; font-weight: 800; margin-bottom: 5px; }
+  .card .nm { font-size: 15px; font-weight: 700; color: #F1F5F9; margin-bottom: 6px; line-height: 1.3; }
+  .card .ds { font-size: 12.5px; color: #94A3B8; line-height: 1.55; }
+  .card .tg {
+    display: inline-block; margin-top: 8px;
+    font-size: 10px; font-weight: 700; padding: 3px 8px;
+    border-radius: 5px;
+  }
+
+  .yr-blue { color: #60A5FA; }
+  .yr-cyan { color: #22D3EE; }
+  .yr-indigo { color: #A5B4FC; }
+  .yr-purple { color: #C084FC; }
+  .yr-rose { color: #F9A8D4; }
+  .yr-amber { color: #FBBF24; }
+  .yr-green { color: #34D399; }
+  .yr-teal { color: #2DD4BF; }
+  .yr-red { color: #F87171; }
+
+  .tg-blue { background: rgba(59,130,246,0.2); color: #93C5FD; }
+  .tg-purple { background: rgba(168,85,247,0.2); color: #D8B4FE; }
+  .tg-amber { background: rgba(245,158,11,0.2); color: #FCD34D; }
+  .tg-green { background: rgba(16,185,129,0.2); color: #6EE7B7; }
+  .tg-red { background: rgba(239,68,68,0.2); color: #FCA5A5; }
+
+  .card a { color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.25); text-underline-offset: 2px; }
+  .card a:hover { text-decoration-color: rgba(255,255,255,0.6); }
+
+  .empty { visibility: hidden; }
+
+  /* === SECTION DIVIDER === */
+  .divider {
+    text-align: center;
+    margin: 80px 0 60px;
+    position: relative;
+  }
+  .divider::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  }
+  .divider span {
+    position: relative; z-index: 1;
+    background: #0B1120;
+    padding: 0 24px;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 2px; color: #475569;
+    text-transform: uppercase;
+  }
+
+  /* === TOPIC SECTIONS === */
+  .topics {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .topic {
+    margin-bottom: 72px;
+    padding: 40px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .topic .topic-num {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    padding: 4px 12px; border-radius: 6px; display: inline-block;
+    margin-bottom: 14px;
+  }
+  .topic h2 {
+    font-size: 28px; font-weight: 800; color: #F1F5F9;
+    margin-bottom: 8px; letter-spacing: -0.5px;
+  }
+  .topic .topic-sub {
+    font-size: 15px; color: #64748B; margin-bottom: 28px;
+    font-style: italic;
+  }
+  .topic p {
+    font-size: 15px; line-height: 1.85; color: #94A3B8;
+    margin-bottom: 16px; max-width: 860px;
+  }
+  .topic p b { color: #CBD5E1; font-weight: 600; }
+  .topic code {
+    background: rgba(255,255,255,0.06); padding: 2px 7px;
+    border-radius: 4px; font-size: 13px; color: #E2E8F0;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .topic .callout {
+    padding: 20px 24px; border-radius: 12px;
+    font-size: 14px; line-height: 1.75;
+    margin: 24px 0; max-width: 860px;
+  }
+  .topic .callout b { font-weight: 700; }
+
+  /* Topic color accents */
+  .topic.t-blue .topic-num { background: #3B82F6; color: #fff; }
+  .topic.t-blue h2 { color: #93C5FD; }
+  .topic.t-blue .callout { background: rgba(59,130,246,0.08); border-left: 3px solid #3B82F6; color: #93C5FD; }
+
+  .topic.t-indigo .topic-num { background: #818CF8; color: #fff; }
+  .topic.t-indigo h2 { color: #A5B4FC; }
+  .topic.t-indigo .callout { background: rgba(129,140,248,0.08); border-left: 3px solid #818CF8; color: #A5B4FC; }
+
+  .topic.t-purple .topic-num { background: #A855F7; color: #fff; }
+  .topic.t-purple h2 { color: #D8B4FE; }
+  .topic.t-purple .callout { background: rgba(168,85,247,0.08); border-left: 3px solid #A855F7; color: #D8B4FE; }
+
+  .topic.t-amber .topic-num { background: #F59E0B; color: #fff; }
+  .topic.t-amber h2 { color: #FCD34D; }
+  .topic.t-amber .callout { background: rgba(245,158,11,0.08); border-left: 3px solid #F59E0B; color: #FCD34D; }
+
+  .topic.t-green .topic-num { background: #10B981; color: #fff; }
+  .topic.t-green h2 { color: #6EE7B7; }
+  .topic.t-green .callout { background: rgba(16,185,129,0.08); border-left: 3px solid #10B981; color: #6EE7B7; }
+
+  .topic.t-slate .topic-num { background: #64748B; color: #fff; }
+  .topic.t-slate h2 { color: #CBD5E1; }
+  .topic.t-slate .callout { background: rgba(100,116,139,0.08); border-left: 3px solid #64748B; color: #CBD5E1; }
+
+  /* Comparison grid */
+  .compare-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    margin: 24px 0;
+  }
+  .compare-card {
+    padding: 24px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .compare-card h3 {
+    font-size: 20px; font-weight: 800; margin-bottom: 4px;
+  }
+  .compare-card .full-name {
+    font-size: 12px; color: #64748B; margin-bottom: 14px; font-style: italic;
+  }
+  .compare-card ul {
+    list-style: none; padding: 0;
+  }
+  .compare-card li {
+    font-size: 14px; color: #94A3B8; padding: 6px 0;
+    padding-left: 20px; position: relative; line-height: 1.6;
+  }
+  .compare-card li::before {
+    content: '→'; position: absolute; left: 0; opacity: 0.4;
+  }
+  .compare-card li b { color: #CBD5E1; font-weight: 600; }
+  .compare-card.gpt-card { background: rgba(59,130,246,0.06); }
+  .compare-card.gpt-card h3 { color: #93C5FD; }
+  .compare-card.bert-card { background: rgba(168,85,247,0.06); }
+  .compare-card.bert-card h3 { color: #D8B4FE; }
+
+  .verdict {
+    margin-top: 20px; padding: 16px 20px; border-radius: 10px;
+    background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.15);
+    font-size: 14px; line-height: 1.7; color: #94A3B8;
+  }
+  .verdict b { color: #93C5FD; }
+
+  /* Scaling chart */
+  .chart-container {
+    margin: 28px 0; padding: 32px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+  }
+  .chart-container h3 {
+    font-size: 16px; font-weight: 700; color: #CBD5E1;
+    margin-bottom: 20px; text-align: center;
+  }
+  .chart-container svg { display: block; margin: 0 auto; }
+
+  /* Flow diagram */
+  .flow {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin: 28px 0; flex-wrap: wrap;
+  }
+  .flow-step {
+    padding: 16px 24px; border-radius: 12px; text-align: center;
+    min-width: 140px;
+  }
+  .flow-step .step-label {
+    font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
+    opacity: 0.5; margin-bottom: 6px;
+  }
+  .flow-step .step-title {
+    font-size: 16px; font-weight: 700; margin-bottom: 4px;
+  }
+  .flow-step .step-desc {
+    font-size: 12px; opacity: 0.7; line-height: 1.5;
+  }
+  .flow-arrow {
+    font-size: 24px; color: #475569; padding: 0 8px;
+  }
+  .flow-step.fs-green { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #6EE7B7; }
+  .flow-step.fs-amber { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: #FCD34D; }
+  .flow-step.fs-blue { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); color: #93C5FD; }
+  .flow-step.fs-purple { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2); color: #D8B4FE; }
+  .flow-step.fs-rose { background: rgba(244,114,182,0.1); border: 1px solid rgba(244,114,182,0.2); color: #F9A8D4; }
+
+  /* Agent loop */
+  .agent-loop {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin: 28px 0; flex-wrap: wrap;
+  }
+  .loop-box {
+    padding: 20px 28px; border-radius: 14px; text-align: center;
+    min-width: 160px;
+  }
+  .loop-box .loop-icon { font-size: 28px; margin-bottom: 8px; }
+  .loop-box .loop-title { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+  .loop-box .loop-desc { font-size: 12px; opacity: 0.7; line-height: 1.5; }
+  .loop-arrow { font-size: 28px; color: #475569; padding: 0 12px; }
+  .loop-box.lb-think { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); color: #93C5FD; }
+  .loop-box.lb-act { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: #FCD34D; }
+  .loop-box.lb-observe { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #6EE7B7; }
+  .loop-repeat {
+    text-align: center; margin-top: 12px;
+    font-size: 13px; color: #475569; font-style: italic;
+  }
+
+  /* Model families table */
+  .model-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    margin: 24px 0; font-size: 14px;
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .model-table thead th {
+    background: rgba(255,255,255,0.06);
+    padding: 14px 18px; text-align: left;
+    font-size: 12px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: #64748B;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .model-table tbody td {
+    padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: #94A3B8; vertical-align: top;
+  }
+  .model-table tbody tr:last-child td { border-bottom: none; }
+  .model-table tbody tr:hover td { background: rgba(255,255,255,0.03); }
+  .model-table .family-name { font-weight: 700; color: #F1F5F9; }
+  .model-table .approach-tag {
+    font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px; display: inline-block;
+  }
+  .approach-closed { background: rgba(239,68,68,0.15); color: #FCA5A5; }
+  .approach-open { background: rgba(16,185,129,0.15); color: #6EE7B7; }
+  .approach-mixed { background: rgba(245,158,11,0.15); color: #FCD34D; }
+
+  /* === FOOTER === */
+  footer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 36px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer .footer-left {
+    font-size: 14px; color: #475569;
+  }
+  footer .footer-left b { color: #64748B; font-weight: 600; }
+  footer .next-link {
+    font-size: 14px; font-weight: 600; color: #A855F7;
+    text-decoration: none; padding: 10px 20px;
+    border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 10px;
+    transition: all 0.2s;
+  }
+  footer .next-link:hover {
+    background: rgba(168,85,247,0.1);
+    border-color: rgba(168,85,247,0.5);
+  }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(255,255,255,0.1); }
+    50% { box-shadow: 0 0 0 6px rgba(255,255,255,0.05); }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<nav>
+  <div class="brand"><span>AI</span> Agent Workshop</div>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="AI_Vocabulary.html">Part 0: Vocabulary</a>
+    <a href="AI_Timeline.html" class="active">Part 1: AI Evolution</a>
+    <a href="AI_Companies.html">Part 2: AI Companies</a>
+    <a href="AI_Agents.html">Part 3: AI Agents</a>
+    <a href="AI_OpenClaw.html">Part 4: OpenClaw</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="part-label">PART 1</div>
+  <h1>Three Eras of Modern AI</h1>
+  <p class="sub">2017 – Present</p>
+  <p class="intro">How did we go from "AI can barely hold a conversation" to "AI can autonomously write code, browse the web, and use tools"? The answer fits into three eras — each one building on the breakthroughs of the last. Click any era to dive deeper.</p>
+
+  <!-- Era descriptions -->
+  <div class="era-descriptions">
+    <a href="#era1-detail" style="text-decoration:none;color:inherit;">
+    <div class="era-box e1">
+      <span class="tag">ERA 1</span>
+      <div class="title">Architecture</div>
+      <div class="subtitle-row"><span class="tagline">Building the right brain structure</span> <span class="years">· 2017 – 2020</span></div>
+      <div class="desc">The <b>Transformer</b> replaced RNNs with <b>self-attention</b> — every word sees every other word at once. This unlocked parallelism, scaling, and the entire modern AI landscape. GPT (generate) and BERT (understand) emerged. GPT won.</div>
+      <div class="scroll-hint">↓ Read more</div>
+    </div>
+    </a>
+    <a href="#era2-detail" style="text-decoration:none;color:inherit;">
+    <div class="era-box e2" >
+      <span class="tag">ERA 2</span>
+      <div class="title">Scale</div>
+      <div class="subtitle-row"><span class="tagline">Bigger models = smarter models</span> <span class="years">· 2020 – 2023</span></div>
+      <div class="desc"><b>Scaling laws</b> proved bigger = smarter, predictably. GPT-3 showed few-shot learning. <b>RLHF</b> taught AI what humans want. <b>ChatGPT</b> hit 100M users in 2 months. GPT-4 passed the bar exam. Open-source models exploded.</div>
+      <div class="scroll-hint">↓ Read more</div>
+    </div>
+    </a>
+    <a href="#era3-detail" style="text-decoration:none;color:inherit;">
+    <div class="era-box e3">
+      <span class="tag">ERA 3</span>
+      <div class="title">Alignment & Agency</div>
+      <div class="subtitle-row"><span class="tagline">Making AI useful, safe & autonomous</span> <span class="years">· 2023 – Now</span></div>
+      <div class="desc">AI gained <b>tools</b> (function calling), <b>reasoning</b> (trained to think step by step), and <b>computer use</b> (controlling screens). Now <b>AI agents</b> plan, act, and self-correct autonomously. The shift from "tool" to "colleague."</div>
+      <div class="scroll-hint">↓ Read more</div>
+    </div>
+    </a>
+  </div>
+
+  <!-- Single continuous timeline, all 14 events -->
+  <div class="timeline">
+
+    <!-- ===== TOP ROW (odd positions: 1,3,5,7,9,11,13) ===== -->
+    <div class="top" style="grid-column:1">
+      <div class="card">
+        <div class="yr yr-blue">2017</div>
+        <div class="nm">Transformer</div>
+        <div class="ds"><a href="https://arxiv.org/abs/1706.03762" target="_blank">"Attention Is All You Need"</a> — self-attention replaces RNNs</div>
+        <div class="tg tg-blue">Changed everything</div>
+      </div>
+    </div>
+    <div class="top empty" style="grid-column:2"><div class="card"><div class="nm">-</div></div></div>
+    <div class="top" style="grid-column:3">
+      <div class="card">
+        <div class="yr yr-indigo">2018</div>
+        <div class="nm">BERT</div>
+        <div class="ds"><a href="https://arxiv.org/abs/1810.04805" target="_blank">Bidirectional</a>. Great at understanding, can't generate</div>
+      </div>
+    </div>
+    <div class="top empty" style="grid-column:4"><div class="card"><div class="nm">-</div></div></div>
+    <div class="top" style="grid-column:5">
+      <div class="card">
+        <div class="yr yr-purple">2020</div>
+        <div class="nm">GPT-3 & Scaling Laws</div>
+        <div class="ds"><a href="https://arxiv.org/abs/2005.14165" target="_blank">175B params</a>. More compute = <a href="https://arxiv.org/abs/2001.08361" target="_blank">smarter, predictably</a></div>
+        <div class="tg tg-purple">Scaling era begins</div>
+      </div>
+    </div>
+    <div class="top empty" style="grid-column:6"><div class="card"><div class="nm">-</div></div></div>
+    <div class="top" style="grid-column:7">
+      <div class="card">
+        <div class="yr yr-amber">Nov 2022</div>
+        <div class="nm">ChatGPT</div>
+        <div class="ds">AI goes mainstream. 100M users in 2 months</div>
+        <div class="tg tg-amber">Fastest app ever</div>
+      </div>
+    </div>
+    <div class="top empty" style="grid-column:8"><div class="card"><div class="nm">-</div></div></div>
+    <div class="top" style="grid-column:9">
+      <div class="card">
+        <div class="yr yr-rose">2023</div>
+        <div class="nm">Open Source</div>
+        <div class="ds"><a href="https://arxiv.org/abs/2302.13971" target="_blank">Llama</a> & Mistral. Open models close the gap fast</div>
+      </div>
+    </div>
+    <div class="top empty" style="grid-column:10"><div class="card"><div class="nm">-</div></div></div>
+    <div class="top" style="grid-column:11">
+      <div class="card">
+        <div class="yr yr-teal">2024</div>
+        <div class="nm">Reasoning Models</div>
+        <div class="ds">o1 & Deep Think: trained to reason internally</div>
+      </div>
+    </div>
+    <div class="top empty" style="grid-column:12"><div class="card"><div class="nm">-</div></div></div>
+    <div class="top" style="grid-column:13">
+      <div class="card">
+        <div class="yr yr-teal">2024</div>
+        <div class="nm">Computer Use</div>
+        <div class="ds">Claude controls mouse, keyboard, browser</div>
+        <div class="tg tg-green">AI enters digital world</div>
+      </div>
+    </div>
+    <div class="top empty" style="grid-column:14"><div class="card"><div class="nm">-</div></div></div>
+
+    <!-- ===== MIDDLE ROW (line + dots) ===== -->
+    <div class="mid c1"  style="grid-column:1"><div class="dot big d-blue"></div></div>
+    <div class="mid c1"  style="grid-column:2"><div class="dot d-cyan"></div></div>
+    <div class="mid c1"  style="grid-column:3"><div class="dot d-indigo"></div></div>
+    <div class="mid t12" style="grid-column:4"><div class="dot d-blue"></div></div>
+    <div class="mid c2"  style="grid-column:5"><div class="dot big d-purple"></div></div>
+    <div class="mid c2"  style="grid-column:6"><div class="dot d-rose"></div></div>
+    <div class="mid c2"  style="grid-column:7"><div class="dot big d-amber"></div></div>
+    <div class="mid c2"  style="grid-column:8"><div class="dot big d-purple"></div></div>
+    <div class="mid t23" style="grid-column:9"><div class="dot d-rose"></div></div>
+    <div class="mid c3"  style="grid-column:10"><div class="dot big d-green"></div></div>
+    <div class="mid c3"  style="grid-column:11"><div class="dot d-teal"></div></div>
+    <div class="mid c3"  style="grid-column:12"><div class="dot d-teal"></div></div>
+    <div class="mid c3"  style="grid-column:13"><div class="dot big d-teal"></div></div>
+    <div class="mid c3"  style="grid-column:14"><div class="dot big d-red"></div></div>
+
+    <!-- ===== BOTTOM ROW (even positions: 2,4,6,8,10,12,14) ===== -->
+    <div class="bot empty" style="grid-column:1"><div class="card"><div class="nm">-</div></div></div>
+    <div class="bot" style="grid-column:2">
+      <div class="card">
+        <div class="yr yr-cyan">2018</div>
+        <div class="nm">GPT-1</div>
+        <div class="ds"><a href="https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf" target="_blank">First generative pre-trained Transformer</a>. 117M params</div>
+      </div>
+    </div>
+    <div class="bot empty" style="grid-column:3"><div class="card"><div class="nm">-</div></div></div>
+    <div class="bot" style="grid-column:4">
+      <div class="card">
+        <div class="yr yr-blue">2019</div>
+        <div class="nm">GPT-2</div>
+        <div class="ds"><a href="https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf" target="_blank">1.5B params</a>. Coherent text. Withheld over safety fears</div>
+      </div>
+    </div>
+    <div class="bot empty" style="grid-column:5"><div class="card"><div class="nm">-</div></div></div>
+    <div class="bot" style="grid-column:6">
+      <div class="card">
+        <div class="yr yr-rose">2022</div>
+        <div class="nm">RLHF & Chain-of-Thought</div>
+        <div class="ds"><a href="https://arxiv.org/abs/2203.02155" target="_blank">Human feedback</a> + <a href="https://arxiv.org/abs/2201.11903" target="_blank">"think step by step"</a></div>
+      </div>
+    </div>
+    <div class="bot empty" style="grid-column:7"><div class="card"><div class="nm">-</div></div></div>
+    <div class="bot" style="grid-column:8">
+      <div class="card">
+        <div class="yr yr-purple">Mar 2023</div>
+        <div class="nm">GPT-4</div>
+        <div class="ds"><a href="https://arxiv.org/abs/2303.08774" target="_blank">Multimodal</a>. Passes bar exam. Expert reasoning</div>
+        <div class="tg tg-purple"><a href="https://arxiv.org/abs/2303.12712" target="_blank">Sparks of AGI</a></div>
+      </div>
+    </div>
+    <div class="bot empty" style="grid-column:9"><div class="card"><div class="nm">-</div></div></div>
+    <div class="bot" style="grid-column:10">
+      <div class="card">
+        <div class="yr yr-green">2023</div>
+        <div class="nm">Function Calling</div>
+        <div class="ds">AI gains tools: search, code, APIs</div>
+        <div class="tg tg-green">Chatbot → Agent</div>
+      </div>
+    </div>
+    <div class="bot empty" style="grid-column:11"><div class="card"><div class="nm">-</div></div></div>
+    <div class="bot" style="grid-column:12">
+      <div class="card">
+        <div class="yr yr-teal">2024</div>
+        <div class="nm">Long Context</div>
+        <div class="ds">Claude: 200K tokens. Gemini: 1M+</div>
+      </div>
+    </div>
+    <div class="bot empty" style="grid-column:13"><div class="card"><div class="nm">-</div></div></div>
+    <div class="bot" style="grid-column:14">
+      <div class="card">
+        <div class="yr yr-red">2025</div>
+        <div class="nm">AI Agents</div>
+        <div class="ds">Autonomous multi-step tasks. Agent SDKs go mainstream</div>
+        <div class="tg tg-red">Autonomous work</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION DIVIDER -->
+  <div class="divider"><span>Deep Dive</span></div>
+
+  <!-- TOPIC-BASED EXPLAINERS -->
+  <div class="topics">
+
+    <!-- ===== TOPIC 1: TRANSFORMER ===== -->
+    <div class="topic t-blue" id="era1-detail">
+      <div class="topic-num">01</div>
+      <h2>What Is a Transformer, and Why Is It So Good?</h2>
+      <div class="topic-sub">The architecture that changed everything</div>
+
+      <p>Before 2017, AI processed language <b>one word at a time</b>. RNNs (Recurrent Neural Networks) passed a hidden state from word to word — like a game of telephone. By word 50, the signal from word 1 was mostly lost. LSTMs improved memory somewhat, but the fundamental problem remained: sequential processing meant no parallelism and weak long-range connections.</p>
+
+      <p>The Transformer, introduced in the 2017 paper <a href="https://arxiv.org/abs/1706.03762" target="_blank" style="color:#93C5FD;">"Attention Is All You Need"</a>, replaced all of this with a single mechanism: <b>self-attention</b>. Instead of processing words in order, it lets every word look at every other word simultaneously.</p>
+
+      <div class="callout">
+        <b>Self-attention in 30 seconds:</b> Each word gets three vectors — a <b>Query</b> (what am I looking for?), a <b>Key</b> (what do I contain?), and a <b>Value</b> (what information do I carry?). The model computes Query × Key scores for every word pair, applies softmax to get weights, then takes a weighted sum of Values. Result: each word gets a new representation that incorporates context from the <b>entire</b> sentence — all computed in parallel.
+      </div>
+
+      <p>In the sentence <i>"The cat sat on the mat because <b>it</b> was tired"</i> — self-attention lets "it" directly attend to "cat" with a high weight, regardless of distance. An RNN would have to carry that information through 6 intermediate steps, losing signal at each one.</p>
+
+      <p>This gave Transformers three superpowers that older models couldn't match:</p>
+
+      <div class="callout">
+        <b>1. Parallelism</b> — All word pairs are computed at once on GPUs, making training orders of magnitude faster.<br><br>
+        <b>2. Long-range connections</b> — Word 1 and word 500 are equally "close" to each other. No information loss over distance.<br><br>
+        <b>3. Scalability</b> — The architecture scales predictably with more data and compute. This directly enabled Era 2.
+      </div>
+    </div>
+
+    <!-- ===== TOPIC 2: GPT vs BERT ===== -->
+    <div class="topic t-indigo" id="era1-gpt-bert">
+      <div class="topic-num">02</div>
+      <h2>Why Did GPT Win Over BERT?</h2>
+      <div class="topic-sub">Two approaches to the same architecture — one proved more versatile</div>
+
+      <p>Both GPT and BERT are built on the Transformer. But they use it in fundamentally different ways, and that difference determined which approach would dominate.</p>
+
+      <div class="compare-grid">
+        <div class="compare-card gpt-card">
+          <h3>GPT</h3>
+          <div class="full-name">Generative Pre-trained Transformer</div>
+          <ul>
+            <li>Reads <b>left-to-right only</b> (like reading a book)</li>
+            <li>Trained to <b>predict the next word</b></li>
+            <li>Can <b>generate</b> text, code, conversations</li>
+            <li>One model does many tasks: write, translate, summarize, reason</li>
+            <li>Gets better at understanding <i>through</i> generation</li>
+          </ul>
+        </div>
+        <div class="compare-card bert-card">
+          <h3>BERT</h3>
+          <div class="full-name">Bidirectional Encoder Representations from Transformers</div>
+          <ul>
+            <li>Reads <b>in all directions</b> (sees full context)</li>
+            <li>Trained to <b>fill in masked words</b></li>
+            <li><b>Cannot generate</b> new text</li>
+            <li>Excellent at classification, search, understanding</li>
+            <li>Needs task-specific fine-tuning for each use</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="verdict">
+        <b>Why GPT won:</b> Generation is a superset of understanding. If you can predict the next word well enough, you implicitly understand grammar, facts, reasoning, and style. GPT-style models turned out to be "universal task solvers" — give them instructions in plain text and they can do almost anything. BERT excels at specific tasks (search ranking, sentiment analysis), but it can't hold a conversation, write an essay, or reason through a problem. The future turned out to need generalists, not specialists.
+      </div>
+    </div>
+
+    <!-- ===== TOPIC 3: SCALING LAWS ===== -->
+    <div class="topic t-purple" id="era2-detail">
+      <div class="topic-num">03</div>
+      <h2>What Are Scaling Laws?</h2>
+      <div class="topic-sub">The discovery that made "just make it bigger" a legitimate strategy</div>
+
+      <p>In 2020, researchers at OpenAI discovered something remarkable: model performance follows a <b>predictable mathematical relationship</b> with three variables — the number of parameters (model size), the amount of training data, and the compute budget. This wasn't a rough trend. It was a <b>power law</b>: performance improves as a smooth, predictable function of scale.</p>
+
+      <p>This meant companies could <b>predict in advance</b> how good a model would be before spending hundreds of millions training it. It turned AI research from "try things and hope" into an engineering problem: if you want X% better performance, invest Y more compute.</p>
+
+      <!-- SVG Scaling Chart -->
+      <div class="chart-container">
+        <h3>Model Size vs. Capability Over Time</h3>
+        <svg viewBox="0 0 800 340" width="760" xmlns="http://www.w3.org/2000/svg" style="font-family:Inter,sans-serif;">
+          <!-- Grid -->
+          <line x1="80" y1="20" x2="80" y2="280" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <line x1="80" y1="280" x2="760" y2="280" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <line x1="80" y1="215" x2="760" y2="215" stroke="rgba(255,255,255,0.04)" stroke-width="1" stroke-dasharray="4,4"/>
+          <line x1="80" y1="150" x2="760" y2="150" stroke="rgba(255,255,255,0.04)" stroke-width="1" stroke-dasharray="4,4"/>
+          <line x1="80" y1="85" x2="760" y2="85" stroke="rgba(255,255,255,0.04)" stroke-width="1" stroke-dasharray="4,4"/>
+
+          <!-- Y-axis labels -->
+          <text x="72" y="284" fill="#475569" font-size="11" text-anchor="end">Low</text>
+          <text x="72" y="154" fill="#475569" font-size="11" text-anchor="end">Med</text>
+          <text x="72" y="28" fill="#475569" font-size="11" text-anchor="end">High</text>
+          <text x="20" y="160" fill="#475569" font-size="11" text-anchor="middle" transform="rotate(-90,20,160)">Capability</text>
+
+          <!-- Scaling curve -->
+          <path d="M100,265 C180,260 220,245 280,220 S380,170 440,140 S540,90 620,60 Q680,42 740,32" fill="none" stroke="url(#curveGrad)" stroke-width="3" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#3B82F6"/>
+              <stop offset="50%" stop-color="#A855F7"/>
+              <stop offset="100%" stop-color="#10B981"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Data points -->
+          <circle cx="120" cy="262" r="6" fill="#3B82F6"/>
+          <text x="120" y="298" fill="#60A5FA" font-size="10" font-weight="700" text-anchor="middle">GPT-1</text>
+          <text x="120" y="310" fill="#475569" font-size="9" text-anchor="middle">117M</text>
+
+          <circle cx="200" cy="252" r="6" fill="#3B82F6"/>
+          <text x="200" y="298" fill="#60A5FA" font-size="10" font-weight="700" text-anchor="middle">GPT-2</text>
+          <text x="200" y="310" fill="#475569" font-size="9" text-anchor="middle">1.5B</text>
+
+          <circle cx="340" cy="195" r="8" fill="#A855F7"/>
+          <text x="340" y="298" fill="#C084FC" font-size="10" font-weight="700" text-anchor="middle">GPT-3</text>
+          <text x="340" y="310" fill="#475569" font-size="9" text-anchor="middle">175B</text>
+
+          <circle cx="480" cy="120" r="8" fill="#A855F7"/>
+          <text x="480" y="298" fill="#C084FC" font-size="10" font-weight="700" text-anchor="middle">GPT-4</text>
+          <text x="480" y="310" fill="#475569" font-size="9" text-anchor="middle">~1.8T*</text>
+
+          <circle cx="620" cy="58" r="8" fill="#10B981"/>
+          <text x="620" y="298" fill="#34D399" font-size="10" font-weight="700" text-anchor="middle">GPT-5</text>
+          <text x="620" y="310" fill="#475569" font-size="9" text-anchor="middle">Optimized</text>
+
+          <circle cx="740" cy="32" r="8" fill="#10B981"/>
+          <text x="740" y="298" fill="#34D399" font-size="10" font-weight="700" text-anchor="middle">o1 / Opus</text>
+          <text x="740" y="310" fill="#475569" font-size="9" text-anchor="middle">+ Reasoning</text>
+
+          <!-- Era labels at top -->
+          <rect x="95" y="6" width="130" height="18" rx="4" fill="rgba(59,130,246,0.15)"/>
+          <text x="160" y="18" fill="#60A5FA" font-size="9" font-weight="700" text-anchor="middle">ERA 1: ARCHITECTURE</text>
+          <rect x="280" y="6" width="260" height="18" rx="4" fill="rgba(168,85,247,0.15)"/>
+          <text x="410" y="18" fill="#C084FC" font-size="9" font-weight="700" text-anchor="middle">ERA 2: SCALE</text>
+          <rect x="560" y="6" width="190" height="18" rx="4" fill="rgba(16,185,129,0.15)"/>
+          <text x="655" y="18" fill="#34D399" font-size="9" font-weight="700" text-anchor="middle">ERA 3: AGENCY</text>
+
+          <!-- Annotation -->
+          <text x="760" y="340" fill="#475569" font-size="9" text-anchor="end">*Rumored size (MoE). Exact figures undisclosed.</text>
+        </svg>
+      </div>
+
+      <div class="callout">
+        <b>The key insight:</b> Scaling laws showed that making models bigger doesn't just add incremental improvement — it unlocks <b>qualitatively new capabilities</b>. GPT-2 could write paragraphs. GPT-3 could do few-shot learning (learn from 2-3 examples). GPT-4 could pass the bar exam and reason about images. Each jump in scale crossed a threshold where the model could suddenly do things it couldn't before.
+      </div>
+    </div>
+
+    <!-- ===== TOPIC 4: REASONING ===== -->
+    <div class="topic t-amber" id="era3-detail">
+      <div class="topic-num">04</div>
+      <h2>What Is Reasoning? How Does It Work?</h2>
+      <div class="topic-sub">From "predict the next word" to "think through the problem"</div>
+
+      <p>Early LLMs would answer a math problem by jumping straight to the answer — and often getting it wrong. The breakthrough came in two stages: first <b>Chain-of-Thought prompting</b>, then <b>reasoning models trained via RL</b>.</p>
+
+      <p><b>Chain-of-Thought (2022)</b> was deceptively simple: if you add "Let's think step by step" to a prompt, the model performs dramatically better on reasoning tasks. Why? Because each intermediate step becomes part of the context for the next prediction. The model is essentially giving itself scratch paper.</p>
+
+      <div class="callout">
+        <b>How reasoning models (o1, Claude Extended Thinking) go further:</b><br><br>
+        Instead of just being <i>prompted</i> to think step by step, these models are <b>trained via reinforcement learning</b> to internalize the habit. During training, the model gets rewarded for correct final answers. Over thousands of iterations, it learns that decomposing problems, checking intermediate steps, and backtracking when something seems wrong leads to better rewards. The result: a model that <b>automatically</b> allocates more "thinking tokens" to harder problems — spending 10 tokens on "What's 2+2?" but 2,000 tokens working through a complex coding problem.
+      </div>
+
+      <p>Importantly, reasoning is still "just" next-token prediction at the mechanism level — but the <b>distribution of what gets predicted</b> has been shaped by RL to favor systematic, step-by-step approaches. The model has learned that thinking before answering produces better outcomes, just like a human learns to show their work in math class.</p>
+    </div>
+
+    <!-- ===== TOPIC 5: TEXT TO ACTIONS ===== -->
+    <div class="topic t-green" id="era3-agents">
+      <div class="topic-num">05</div>
+      <h2>How Do Agents Turn Text Into Actions?</h2>
+      <div class="topic-sub">From chatbot to autonomous worker</div>
+
+      <p>An LLM by itself can only output text. To make it actually <i>do</i> things — search the web, write files, call APIs — you need <b>function calling</b> and an <b>agent loop</b>.</p>
+
+      <p><b>Function calling</b> works like this: the model is trained to recognize when it needs a tool, and instead of outputting regular text, it outputs a structured JSON command. A host program intercepts this, executes the real action, and feeds the result back to the model.</p>
+
+      <!-- Flow diagram: function calling -->
+      <div class="flow">
+        <div class="flow-step fs-blue">
+          <div class="step-label">STEP 1</div>
+          <div class="step-title">User asks</div>
+          <div class="step-desc">"What's the weather<br>in Tokyo?"</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step fs-purple">
+          <div class="step-label">STEP 2</div>
+          <div class="step-title">Model outputs JSON</div>
+          <div class="step-desc"><code>{"tool": "weather",<br>"city": "Tokyo"}</code></div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step fs-amber">
+          <div class="step-label">STEP 3</div>
+          <div class="step-title">Host executes</div>
+          <div class="step-desc">Calls real weather<br>API, gets data</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step fs-green">
+          <div class="step-label">STEP 4</div>
+          <div class="step-title">Model responds</div>
+          <div class="step-desc">"It's 18°C and<br>sunny in Tokyo"</div>
+        </div>
+      </div>
+
+      <p>An <b>AI agent</b> takes this further by running in a loop. Instead of one question → one tool call → one answer, the agent autonomously decides what to do next, over and over, until the task is complete:</p>
+
+      <!-- Agent loop diagram -->
+      <div class="agent-loop">
+        <div class="loop-box lb-think">
+          <div class="loop-icon">🧠</div>
+          <div class="loop-title">Think</div>
+          <div class="loop-desc">Analyze the task.<br>Plan next step.</div>
+        </div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-box lb-act">
+          <div class="loop-icon">⚡</div>
+          <div class="loop-title">Act</div>
+          <div class="loop-desc">Call a tool, write code,<br>browse the web.</div>
+        </div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-box lb-observe">
+          <div class="loop-icon">👁</div>
+          <div class="loop-title">Observe</div>
+          <div class="loop-desc">Read the result.<br>Check for errors.</div>
+        </div>
+      </div>
+      <div class="loop-repeat">↻ Repeat until task is complete</div>
+
+      <div class="callout">
+        <b>The critical difference from a chatbot:</b> In a chatbot, the <b>human</b> drives the conversation — asking questions, deciding what to do next. In an agent, the <b>AI</b> drives the workflow — deciding which tools to use, in what order, handling errors, and self-correcting. The human provides the goal; the agent figures out the path.
+      </div>
+    </div>
+
+    <!-- ===== TOPIC 6: MODEL FAMILIES ===== -->
+    <div class="topic t-slate" id="model-families">
+      <div class="topic-num">06</div>
+      <h2>The Major Model Families</h2>
+      <div class="topic-sub">A landscape of who's building what — and how they differ</div>
+
+      <p>The AI model landscape in 2025 is split between <b>closed-source</b> frontier models (accessible via API) and <b>open-source</b> models (downloadable and modifiable). Each family has different strengths, trade-offs, and philosophies.</p>
+
+      <table class="model-table">
+        <thead>
+          <tr>
+            <th>Family</th>
+            <th>Company</th>
+            <th>Latest</th>
+            <th>Approach</th>
+            <th>Strengths</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="family-name">GPT</td>
+            <td>OpenAI</td>
+            <td>GPT-5</td>
+            <td><span class="approach-tag approach-closed">Closed</span></td>
+            <td>Broad capabilities, multimodal, reasoning</td>
+          </tr>
+          <tr>
+            <td class="family-name">Claude</td>
+            <td>Anthropic</td>
+            <td>Opus 4.6</td>
+            <td><span class="approach-tag approach-closed">Closed</span></td>
+            <td>Safety, long-context, coding, agents</td>
+          </tr>
+          <tr>
+            <td class="family-name">Gemini</td>
+            <td>Google</td>
+            <td>3.1 Pro</td>
+            <td><span class="approach-tag approach-closed">Closed</span></td>
+            <td>1M+ context, multimodal, reasoning</td>
+          </tr>
+          <tr>
+            <td class="family-name">Llama</td>
+            <td>Meta</td>
+            <td>Llama 4</td>
+            <td><span class="approach-tag approach-open">Open</span></td>
+            <td>Open-source, MoE, 200 languages</td>
+          </tr>
+          <tr>
+            <td class="family-name">Mistral</td>
+            <td>Mistral AI</td>
+            <td>Large 3</td>
+            <td><span class="approach-tag approach-mixed">Mixed</span></td>
+            <td>Speed, efficiency, European data sovereignty</td>
+          </tr>
+          <tr>
+            <td class="family-name">DeepSeek</td>
+            <td>DeepSeek</td>
+            <td>V3</td>
+            <td><span class="approach-tag approach-open">Open</span></td>
+            <td>Cost-efficient ($6M training), near GPT-4</td>
+          </tr>
+          <tr>
+            <td class="family-name">Qwen</td>
+            <td>Alibaba</td>
+            <td>Qwen 3</td>
+            <td><span class="approach-tag approach-open">Open</span></td>
+            <td>Multilingual, video understanding</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <b>The open vs. closed debate:</b> Closed models (GPT, Claude, Gemini) tend to be the most capable and lead in safety research, but require API access and trusting the provider. Open models (Llama, DeepSeek, Qwen) let you run models on your own hardware, fine-tune for specific tasks, and maintain data sovereignty — but may lag in raw capability and safety guardrails. The gap is closing fast: DeepSeek V3 achieved near-GPT-4 performance for just $6M in training costs, a fraction of what frontier labs spend.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left"><b>AI Agent Workshop</b> · Week 1</div>
+    <a href="AI_Companies.html" class="next-link">Next: AI Companies →</a>
+  </footer>
+
+</div>
+</body>
+</html>

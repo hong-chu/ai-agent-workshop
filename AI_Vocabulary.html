@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Part 0: AI Vocabulary — AI Agent Workshop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0B1120;
+    color: #E2E8F0;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === NAV === */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(11,17,32,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 40px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav .brand { font-size: 15px; font-weight: 700; color: #F8FAFC; letter-spacing: -0.3px; }
+  nav .brand span { color: #60A5FA; }
+  nav .links { display: flex; gap: 6px; }
+  nav .links a {
+    font-size: 13px; font-weight: 500; color: #64748B;
+    text-decoration: none; padding: 6px 14px; border-radius: 8px;
+    transition: all 0.2s;
+  }
+  nav .links a:hover { color: #CBD5E1; background: rgba(255,255,255,0.05); }
+  nav .links a.active { color: #F1F5F9; background: rgba(255,255,255,0.08); font-weight: 600; }
+
+  /* === PAGE === */
+  .page {
+    max-width: 1100px; margin: 0 auto;
+    padding: 100px 30px 60px;
+    position: relative; z-index: 1;
+  }
+
+  /* === HEADER === */
+  .part-label {
+    text-align: center; font-size: 12px; font-weight: 700;
+    letter-spacing: 2.5px; color: #F59E0B;
+    margin-bottom: 12px;
+    animation: fadeInDown 0.6s ease both;
+  }
+  h1 {
+    font-size: 48px; font-weight: 800; text-align: center;
+    color: #F8FAFC; margin-bottom: 8px; letter-spacing: -1px;
+    animation: fadeInDown 0.6s ease 0.1s both;
+  }
+  .sub {
+    text-align: center; font-size: 18px; color: #64748B; margin-bottom: 14px;
+    animation: fadeInDown 0.6s ease 0.15s both;
+  }
+  .intro {
+    text-align: center; font-size: 16px; color: #94A3B8;
+    max-width: 720px; margin: 0 auto 40px; line-height: 1.7;
+    animation: fadeInDown 0.6s ease 0.2s both;
+  }
+
+  /* === TABLE OF CONTENTS === */
+  .toc {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 8px; margin-bottom: 56px;
+    animation: fadeInUp 0.5s ease 0.3s both;
+  }
+  .toc a {
+    font-size: 13px; font-weight: 600; color: #64748B;
+    text-decoration: none; padding: 6px 16px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.2s;
+  }
+  .toc a:hover { color: #E2E8F0; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); }
+
+  /* === GROUP SECTION === */
+  .group {
+    margin-bottom: 56px;
+  }
+  .group-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .group-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .group-header h2 {
+    font-size: 24px; font-weight: 800; letter-spacing: -0.3px;
+  }
+  .group-header .group-desc {
+    font-size: 13px; color: #64748B; margin-left: auto;
+    font-style: italic;
+  }
+
+  /* Group colors */
+  .group.g-red .group-icon { background: rgba(239,68,68,0.15); color: #FCA5A5; }
+  .group.g-red h2 { color: #FCA5A5; }
+  .group.g-blue .group-icon { background: rgba(59,130,246,0.15); color: #93C5FD; }
+  .group.g-blue h2 { color: #93C5FD; }
+  .group.g-purple .group-icon { background: rgba(168,85,247,0.15); color: #D8B4FE; }
+  .group.g-purple h2 { color: #D8B4FE; }
+  .group.g-green .group-icon { background: rgba(16,185,129,0.15); color: #6EE7B7; }
+  .group.g-green h2 { color: #6EE7B7; }
+  .group.g-amber .group-icon { background: rgba(245,158,11,0.15); color: #FCD34D; }
+  .group.g-amber h2 { color: #FCD34D; }
+  .group.g-cyan .group-icon { background: rgba(6,182,212,0.15); color: #67E8F9; }
+  .group.g-cyan h2 { color: #67E8F9; }
+
+  /* === TERM CARD === */
+  .term {
+    padding: 24px 28px;
+    margin-bottom: 14px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: all 0.2s;
+  }
+  .term:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .term-header {
+    display: flex; align-items: baseline; gap: 12px;
+    margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .term-name {
+    font-size: 18px; font-weight: 800; color: #F1F5F9;
+  }
+  .term-aka {
+    font-size: 12px; color: #475569; font-style: italic;
+  }
+  .term-tags {
+    margin-left: auto; display: flex; gap: 6px;
+  }
+  .term-tag {
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 4px; letter-spacing: 0.5px;
+  }
+  .tag-p1 { background: rgba(59,130,246,0.15); color: #93C5FD; }
+  .tag-p2 { background: rgba(168,85,247,0.15); color: #D8B4FE; }
+  .tag-p3 { background: rgba(16,185,129,0.15); color: #6EE7B7; }
+  .tag-basic { background: rgba(245,158,11,0.15); color: #FCD34D; }
+
+  .term-def {
+    font-size: 15px; line-height: 1.8; color: #94A3B8;
+    margin-bottom: 10px;
+  }
+  .term-def b { color: #CBD5E1; font-weight: 600; }
+  .term-analogy {
+    font-size: 13px; line-height: 1.65;
+    padding: 12px 16px; border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid rgba(255,255,255,0.1);
+    color: #CBD5E1;
+  }
+  .term-analogy::before {
+    content: '💡 ';
+  }
+
+  /* === MINI DIAGRAMS === */
+  .mini-diagram {
+    margin: 14px 0 8px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; flex-wrap: wrap;
+  }
+  .md-box {
+    padding: 10px 18px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .md-arrow { font-size: 18px; color: #334155; padding: 0 6px; }
+  .md-blue { background: rgba(59,130,246,0.1); color: #93C5FD; }
+  .md-purple { background: rgba(168,85,247,0.1); color: #D8B4FE; }
+  .md-green { background: rgba(16,185,129,0.1); color: #6EE7B7; }
+  .md-amber { background: rgba(245,158,11,0.1); color: #FCD34D; }
+  .md-red { background: rgba(239,68,68,0.1); color: #FCA5A5; }
+  .md-slate { background: rgba(100,116,139,0.1); color: #CBD5E1; }
+
+  /* === FOOTER === */
+  footer {
+    margin-top: 72px; padding: 40px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  footer .footer-left { font-size: 14px; color: #475569; }
+  footer .footer-left b { color: #64748B; font-weight: 600; }
+  footer a.nav-link {
+    font-size: 14px; font-weight: 600;
+    text-decoration: none; padding: 10px 20px;
+    border-radius: 10px; transition: all 0.2s;
+  }
+  footer .next-link { color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); }
+  footer .next-link:hover { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.5); }
+
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand"><span>AI</span> Agent Workshop</div>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="AI_Vocabulary.html" class="active">Part 0: Vocabulary</a>
+    <a href="AI_Timeline.html">Part 1: AI Evolution</a>
+    <a href="AI_Companies.html">Part 2: AI Companies</a>
+    <a href="AI_Agents.html">Part 3: AI Agents</a>
+    <a href="AI_OpenClaw.html">Part 4: OpenClaw</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="part-label">PART 0</div>
+  <h1>AI Vocabulary</h1>
+  <p class="sub">Every term you need, explained like a friend would</p>
+  <p class="intro">Before diving into the workshop, here's your cheat sheet. Every term is grouped by concept, defined clearly, and paired with a simple analogy. Tags show which parts of the workshop use each term.</p>
+
+  <!-- TOC -->
+  <div class="toc">
+    <a href="#basics">The Basics</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#training">Training & Learning</a>
+    <a href="#models">Models & Families</a>
+    <a href="#alignment">Alignment & Safety</a>
+    <a href="#agents">Agents & Tools</a>
+  </div>
+
+  <!-- ===== GROUP 1: THE BASICS ===== -->
+  <div class="group g-red" id="basics">
+    <div class="group-header">
+      <div class="group-icon">🧱</div>
+      <h2>The Basics</h2>
+      <div class="group-desc">Foundational concepts you'll see everywhere</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Artificial Intelligence (AI)</span>
+        <div class="term-tags"><span class="term-tag tag-basic">Basic</span></div>
+      </div>
+      <div class="term-def">The broad field of building machines that can perform tasks that typically require human intelligence — understanding language, recognizing images, making decisions, solving problems.</div>
+      <div class="term-analogy">AI is the umbrella term. Machine learning, deep learning, and LLMs are all subfields within AI — like how "sports" includes basketball, soccer, and tennis.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Parameter</span>
+        <span class="term-aka">aka "weight"</span>
+        <div class="term-tags"><span class="term-tag tag-basic">Basic</span><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def">A single adjustable number inside a neural network. A model with <b>175 billion parameters</b> (like GPT-3) has 175 billion knobs that were tuned during training. More parameters generally = more capacity to learn patterns.</div>
+      <div class="term-analogy">If a model is a piano, parameters are the individual strings. More strings = richer sound. GPT-1 had 117 million strings. GPT-4 has roughly 1.8 trillion.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Training</span>
+        <div class="term-tags"><span class="term-tag tag-basic">Basic</span></div>
+      </div>
+      <div class="term-def">The process of teaching a model by showing it enormous amounts of data (for LLMs: most of the internet's text). The model adjusts its parameters to get better at predicting the next word. Training GPT-4 reportedly cost <b>$100M+</b> in compute.</div>
+      <div class="term-analogy">Training is like studying for an exam by reading every book in every library. You don't memorize the books — you learn patterns, grammar, facts, and reasoning from them.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Inference</span>
+        <div class="term-tags"><span class="term-tag tag-basic">Basic</span></div>
+      </div>
+      <div class="term-def">Using a trained model to make predictions or generate outputs. When you type a question to ChatGPT and it responds, that's inference. Training happens once (expensively); inference happens millions of times per day.</div>
+      <div class="term-analogy">Training = studying for the exam. Inference = taking the exam. You study once, but you take many exams.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">GPU</span>
+        <span class="term-aka">Graphics Processing Unit</span>
+        <div class="term-tags"><span class="term-tag tag-basic">Basic</span><span class="term-tag tag-p2">Part 2</span></div>
+      </div>
+      <div class="term-def">The hardware that powers AI training and inference. Originally designed for video games, GPUs excel at doing millions of simple math operations in parallel — exactly what neural networks need. <b>NVIDIA's H100/B200</b> GPUs are the gold standard.</div>
+      <div class="term-analogy">A CPU is like one very fast mathematician. A GPU is like 10,000 average mathematicians working at the same time. AI needs the 10,000.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Open Source vs. Closed Source</span>
+        <div class="term-tags"><span class="term-tag tag-p2">Part 2</span></div>
+      </div>
+      <div class="term-def"><b>Open source:</b> the model weights are publicly available — anyone can download, use, and modify the model (e.g., Llama, DeepSeek). <b>Closed source:</b> only accessible via API — the company keeps the weights secret (e.g., GPT, Claude, Gemini).</div>
+      <div class="term-analogy">Open source = a recipe you can cook yourself and tweak. Closed source = a restaurant where you order the dish but can't see the recipe.</div>
+    </div>
+  </div>
+
+  <!-- ===== GROUP 2: ARCHITECTURE ===== -->
+  <div class="group g-blue" id="architecture">
+    <div class="group-header">
+      <div class="group-icon">🏗️</div>
+      <h2>Architecture</h2>
+      <div class="group-desc">How models are structured inside</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Token</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def">The basic unit an LLM processes. Not exactly a word — tokens are pieces of words created by <b>Byte-Pair Encoding (BPE)</b>. Common words like "the" are one token. Uncommon words get split: "tokenization" → "token" + "ization". On average, 1 token ≈ 0.75 words.</div>
+      <div class="term-analogy">If words are LEGO sets, tokens are the individual LEGO pieces. Common sets stay whole; uncommon ones get broken into reusable parts.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Embedding</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def">Converting a token into a list of numbers (a <b>vector</b>) that captures its meaning. Each token gets looked up in a giant learned table (~50,000 tokens × ~12,000 dimensions). Words with similar meanings end up close together in this number space.</div>
+      <div class="mini-diagram">
+        <div class="md-box md-blue">"king"</div>
+        <div class="md-arrow">→</div>
+        <div class="md-box md-purple">[0.21, -0.87, 0.53, ...]</div>
+        <div class="md-arrow" style="padding:0 12px;">~12,000 numbers</div>
+      </div>
+      <div class="term-analogy">GPS coordinates for meaning. "King" and "queen" are nearby. "King" and "potato" are far apart. The model learned these positions during training.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Transformer</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def">The neural network architecture behind all modern LLMs (2017). Its key innovation: <b>self-attention</b>, which lets every word look at every other word simultaneously. This replaced sequential models (RNNs) and unlocked parallelism, scaling, and long-range understanding.</div>
+      <div class="term-analogy">Older models read like a person scanning left-to-right, one word at a time. A Transformer reads like someone who can see the entire page at once and instantly understand which words relate to which.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Self-Attention</span>
+        <span class="term-aka">aka "Attention mechanism"</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def">The core mechanism of Transformers. For each word, it computes a relevance score with every other word using three learned vectors: <b>Query</b> (what am I looking for?), <b>Key</b> (what do I contain?), and <b>Value</b> (what information do I carry?). The formula: Attention = softmax(Q × K^T / √d) × V.</div>
+      <div class="mini-diagram">
+        <div class="md-box md-blue">Query (Q)</div>
+        <div class="md-arrow">×</div>
+        <div class="md-box md-purple">Key (K)</div>
+        <div class="md-arrow">→</div>
+        <div class="md-box md-amber">Scores</div>
+        <div class="md-arrow">→ softmax →</div>
+        <div class="md-box md-green">Weighted Values</div>
+      </div>
+      <div class="term-analogy">At a party, self-attention is like being able to hear every conversation simultaneously and focusing on the ones most relevant to what you're saying. Q = "I need context about X." K = "I have info about Y." If X and Y match, the attention score is high.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Context Window</span>
+        <span class="term-aka">aka "Context length"</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def">The maximum number of tokens a model can process in a single conversation. <b>GPT-4:</b> 128K tokens (~300 pages). <b>Claude:</b> 200K tokens. <b>Gemini:</b> 1M+ tokens. Longer context = can read more material at once, but costs more compute.</div>
+      <div class="term-analogy">The context window is the model's working memory — how many pages of notes it can spread out on its desk at once. A bigger desk = can work with more information simultaneously.</div>
+    </div>
+
+  </div>
+
+  <!-- ===== GROUP 3: TRAINING & LEARNING ===== -->
+  <div class="group g-purple" id="training">
+    <div class="group-header">
+      <div class="group-icon">🎓</div>
+      <h2>Training & Learning</h2>
+      <div class="group-desc">How models learn and improve</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Pre-training</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def">The first, most expensive phase of training where the model reads a massive corpus of text (books, websites, code) and learns to predict the next token. This gives the model its general knowledge, language ability, and reasoning foundations. Costs tens to hundreds of millions of dollars.</div>
+      <div class="term-analogy">Pre-training is like going through all of school — kindergarten through PhD. You build broad knowledge about everything, not yet specialized for any particular job.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Fine-tuning</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def">Additional training on a smaller, specific dataset to specialize the model for a particular task or behavior. For example, fine-tuning on medical texts to create a medical AI, or fine-tuning on conversation examples to make the model a better chatbot.</div>
+      <div class="term-analogy">If pre-training is going to medical school, fine-tuning is your residency — specializing in cardiology by doing hundreds of cardiac procedures.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">RLHF</span>
+        <span class="term-aka">Reinforcement Learning from Human Feedback</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def">A technique that makes models helpful and safe by training them on <b>human preferences</b>. Step 1: Humans rank model outputs (response A is better than B). Step 2: A "reward model" learns these preferences. Step 3: The LLM is trained via RL to maximize the reward. This is what turned raw GPT-3 into ChatGPT.</div>
+      <div class="mini-diagram">
+        <div class="md-box md-blue">Raw model</div>
+        <div class="md-arrow">→</div>
+        <div class="md-box md-purple">Human ranks outputs</div>
+        <div class="md-arrow">→</div>
+        <div class="md-box md-amber">Reward model learns</div>
+        <div class="md-arrow">→</div>
+        <div class="md-box md-green">Helpful chatbot</div>
+      </div>
+      <div class="term-analogy">Training a dog: the dog (model) tries something, you say "good boy" or "bad boy" (human feedback), and eventually it learns what you want.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Scaling Laws</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def">The 2020 discovery that model performance improves as a <b>predictable power law</b> of three variables: model size (parameters), training data, and compute. This meant researchers could predict how good a model would be before training it — turning AI from trial-and-error into engineering.</div>
+      <div class="term-analogy">If you know that doubling your study hours improves your test score by 5%, you can plan exactly how long to study for the grade you want. Scaling laws gave AI researchers the same kind of predictability.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Few-shot / Zero-shot Learning</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def"><b>Zero-shot:</b> the model performs a task it was never specifically trained on, just from the instruction. <b>Few-shot:</b> you give 2-3 examples in the prompt and the model follows the pattern. GPT-3 was the first model to do this well, which was a major surprise.</div>
+      <div class="term-analogy">Zero-shot = "Translate this to French" (no examples). Few-shot = "Here's how I'd translate: 'Hello' → 'Bonjour', 'Goodbye' → 'Au revoir'. Now translate: 'Thank you'" — and it gets it.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Chain-of-Thought (CoT)</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">A prompting technique (and later, a training technique) where the model <b>shows its reasoning steps</b> before giving a final answer. Adding "Let's think step by step" to a prompt dramatically improves accuracy on math, logic, and reasoning tasks.</div>
+      <div class="term-analogy">Instead of blurting out "42!" the model writes: "First I need to... then I calculate... then I check... the answer is 42." The intermediate steps become context that helps the next prediction be more accurate — like giving yourself scratch paper on an exam.</div>
+    </div>
+  </div>
+
+  <!-- ===== GROUP 4: MODELS & FAMILIES ===== -->
+  <div class="group g-amber" id="models">
+    <div class="group-header">
+      <div class="group-icon">🏢</div>
+      <h2>Models & Families</h2>
+      <div class="group-desc">The major model types and what they do</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">LLM</span>
+        <span class="term-aka">Large Language Model</span>
+        <div class="term-tags"><span class="term-tag tag-basic">Basic</span></div>
+      </div>
+      <div class="term-def">A neural network with billions of parameters trained on massive text data to understand and generate language. "Large" = billions of parameters. All modern AI chatbots (ChatGPT, Claude, Gemini) are LLMs. Under the hood, they work by <b>predicting the next token</b>, one at a time.</div>
+      <div class="term-analogy">A giant pattern-matching engine. It's read so much text that it's very good at predicting what should come next — and that ability to predict turns out to be surprisingly close to "understanding."</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">GPT</span>
+        <span class="term-aka">Generative Pre-trained Transformer</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span><span class="term-tag tag-p2">Part 2</span></div>
+      </div>
+      <div class="term-def">OpenAI's model family. Reads <b>left-to-right</b> and predicts the next word. "Generative" = it creates new text. The approach that won: GPT-1 (117M) → GPT-2 (1.5B) → GPT-3 (175B) → GPT-4 (~1.8T) → GPT-5. Plus reasoning specialists: o1 → o3.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">BERT</span>
+        <span class="term-aka">Bidirectional Encoder Representations from Transformers</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span></div>
+      </div>
+      <div class="term-def">Google's 2018 model. Reads in <b>all directions</b> (bidirectional) and was trained to fill in masked words. Excellent at understanding and classification tasks (search, sentiment), but <b>cannot generate</b> new text. Lost to GPT because generation proved more versatile than understanding.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Multimodal</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span><span class="term-tag tag-p2">Part 2</span></div>
+      </div>
+      <div class="term-def">A model that can process <b>multiple types of input</b> — text, images, audio, video. GPT-4 was the first major multimodal LLM (text + images). Gemini processes text, images, audio, and video. This is a shift from "language model" to "everything model."</div>
+      <div class="term-analogy">A multilingual person who can also read sheet music, interpret photos, and lip-read. Not just text anymore — the model can see and hear.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Reasoning Model</span>
+        <span class="term-aka">e.g., o1, Claude Extended Thinking</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">A model <b>trained via RL</b> to think step-by-step internally before answering. Unlike CoT prompting (which just asks the model to show its work), reasoning models have internalized the habit of decomposing problems, checking work, and backtracking. They spend more "thinking tokens" on harder problems.</div>
+      <div class="term-analogy">Regular model = a student who blurts out the first answer that comes to mind. Reasoning model = a student who's been trained to always show their work, double-check, and only then give the answer.</div>
+    </div>
+  </div>
+
+  <!-- ===== GROUP 5: ALIGNMENT & SAFETY ===== -->
+  <div class="group g-cyan" id="alignment">
+    <div class="group-header">
+      <div class="group-icon">🛡️</div>
+      <h2>Alignment & Safety</h2>
+      <div class="group-desc">Making AI do what we actually want</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Alignment</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span><span class="term-tag tag-p2">Part 2</span></div>
+      </div>
+      <div class="term-def">The challenge of making AI systems behave in ways that match <b>human intentions and values</b>. A misaligned model might be very capable but optimize for the wrong things — like a genie that grants wishes too literally. RLHF, Constitutional AI, and safety testing are all alignment techniques.</div>
+      <div class="term-analogy">You hire a brilliant assistant but need to make sure they actually help you — not just complete tasks technically correctly while doing harm in the process. Alignment is the process of teaching them your actual values.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Constitutional AI</span>
+        <div class="term-tags"><span class="term-tag tag-p2">Part 2</span></div>
+      </div>
+      <div class="term-def">Anthropic's approach to alignment. Instead of training on raw human preferences (RLHF), the model is trained against a written set of <b>principles</b> (a "constitution") — like "be helpful, harmless, and honest." The model critiques and revises its own outputs based on these principles.</div>
+      <div class="term-analogy">Instead of a teacher grading every essay, you give the student a rubric and teach them to grade themselves. The constitution is the rubric.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Hallucination</span>
+        <div class="term-tags"><span class="term-tag tag-basic">Basic</span></div>
+      </div>
+      <div class="term-def">When a model confidently generates information that is <b>factually wrong or made up</b>. Because LLMs predict the most likely next token (not truth), they can produce fluent, convincing text about things that never happened, papers that don't exist, or statistics they invented.</div>
+      <div class="term-analogy">A very confident friend who always has an answer — even when they're guessing. They sound so sure you don't think to fact-check, but sometimes they're completely making it up.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Guardrails</span>
+        <div class="term-tags"><span class="term-tag tag-basic">Basic</span><span class="term-tag tag-p2">Part 2</span></div>
+      </div>
+      <div class="term-def">Safety measures built into models to prevent harmful outputs — refusing to provide dangerous information, avoiding bias, declining inappropriate requests. Different companies implement guardrails differently: some stricter (Claude), some more permissive.</div>
+    </div>
+  </div>
+
+  <!-- ===== GROUP 6: AGENTS & TOOLS ===== -->
+  <div class="group g-green" id="agents">
+    <div class="group-header">
+      <div class="group-icon">🤖</div>
+      <h2>Agents & Tools</h2>
+      <div class="group-desc">Making AI do things in the real world</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Function Calling</span>
+        <span class="term-aka">aka "Tool use"</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">The model outputs a structured JSON command instead of regular text, telling a host program to execute an action (search the web, read a file, call an API). The host runs the action and sends the result back. This is how LLMs go from "text generators" to "tool users."</div>
+      <div class="mini-diagram">
+        <div class="md-box md-blue">Model</div>
+        <div class="md-arrow">→ JSON →</div>
+        <div class="md-box md-amber">Host program</div>
+        <div class="md-arrow">→ executes →</div>
+        <div class="md-box md-green">Real action</div>
+        <div class="md-arrow">→ result →</div>
+        <div class="md-box md-blue">Model</div>
+      </div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">AI Agent</span>
+        <div class="term-tags"><span class="term-tag tag-p1">Part 1</span><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">An AI system that can <b>autonomously</b> plan, use tools, and complete multi-step tasks in a loop: <b>Think → Act → Observe → Repeat</b>. Unlike a chatbot (human drives), an agent drives its own workflow. You give it a goal; it figures out the path.</div>
+      <div class="mini-diagram">
+        <div class="md-box md-blue">🧠 Think</div>
+        <div class="md-arrow">→</div>
+        <div class="md-box md-amber">⚡ Act</div>
+        <div class="md-arrow">→</div>
+        <div class="md-box md-green">👁 Observe</div>
+        <div class="md-arrow">→ ↻</div>
+      </div>
+      <div class="term-analogy">A chatbot is like texting a smart friend — you ask questions, they answer. An agent is like hiring an assistant — you say "book me a flight to Tokyo" and they handle the research, comparison, and booking autonomously.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">MCP</span>
+        <span class="term-aka">Model Context Protocol</span>
+        <div class="term-tags"><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">An open standard (by Anthropic) for connecting AI models to external data sources and tools. Think of it as a <b>universal adapter</b> — instead of building custom integrations for every tool, MCP provides a standard way for AI to talk to databases, APIs, file systems, and more.</div>
+      <div class="term-analogy">USB-C for AI. Before USB-C, every device had a different charger. MCP is one standard protocol so any AI can connect to any tool.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Prompt / Prompt Engineering</span>
+        <div class="term-tags"><span class="term-tag tag-basic">Basic</span><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">The text you give to an AI model to get it to do what you want. <b>Prompt engineering</b> is the skill of crafting prompts that produce the best results — using specific instructions, examples, formatting, and context to guide the model's output.</div>
+      <div class="term-analogy">The prompt is like a brief you give a freelancer. A vague brief ("write something about dogs") gets mediocre results. A specific brief ("write a 200-word blog post about golden retrievers for first-time dog owners, in a warm tone") gets exactly what you want.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">RAG</span>
+        <span class="term-aka">Retrieval-Augmented Generation</span>
+        <div class="term-tags"><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">A technique where the model <b>retrieves relevant documents</b> from a knowledge base before generating its answer. Instead of relying only on what it learned during training, the model gets fresh, specific context. This reduces hallucinations and lets the model answer about your private data.</div>
+      <div class="term-analogy">Instead of answering a test from memory alone, you're allowed to look through your notes first. The model searches a database, finds the most relevant passages, and uses them to craft its answer.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Agentic Loop</span>
+        <div class="term-tags"><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">The core execution cycle of an AI agent: <b>Perceive → Reason → Act → Observe</b>, repeated until the task is complete or a stopping condition is met. Unlike a single LLM call, the agentic loop allows the model to take action, see the result, adjust its plan, and keep going — making it capable of multi-step problem solving.</div>
+      <div class="mini-diagram">
+        <div class="md-box md-blue">Perceive</div>
+        <div class="md-arrow">→</div>
+        <div class="md-box md-purple">Reason</div>
+        <div class="md-arrow">→</div>
+        <div class="md-box md-amber">Act</div>
+        <div class="md-arrow">→</div>
+        <div class="md-box md-green">Observe</div>
+        <div class="md-arrow">→ ↻</div>
+      </div>
+      <div class="term-analogy">A chef cooking a new recipe: taste, think about what's missing, add an ingredient, taste again. Each loop refines the result until it's right.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Multi-Agent Systems</span>
+        <div class="term-tags"><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">An architecture where <b>multiple specialized AI agents</b> collaborate on a task. Each agent has a specific role (researcher, coder, reviewer) and they pass messages to each other. A supervisor or orchestrator agent coordinates the workflow. This mirrors how human teams work — divide and conquer.</div>
+      <div class="mini-diagram">
+        <div class="md-box md-purple">🎯 Orchestrator</div>
+        <div class="md-arrow">→</div>
+        <div class="md-box md-blue">🔍 Researcher</div>
+        <div class="md-arrow">↔</div>
+        <div class="md-box md-amber">💻 Coder</div>
+        <div class="md-arrow">↔</div>
+        <div class="md-box md-green">✅ Reviewer</div>
+      </div>
+      <div class="term-analogy">Instead of one person doing everything, you have a project manager assigning tasks to a research team, an engineering team, and a QA team — each plays to their strengths.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Human-in-the-Loop</span>
+        <span class="term-aka">aka "HITL"</span>
+        <div class="term-tags"><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">A design pattern where an AI agent <b>pauses and asks a human for approval</b> before taking critical or irreversible actions. The agent handles routine steps autonomously but escalates high-stakes decisions (spending money, deleting data, sending emails) to a human. Balances automation speed with human judgment.</div>
+      <div class="term-analogy">An assistant who handles your calendar but calls you before canceling an important meeting. They do the routine work, but check in before doing anything you might regret.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Agent Memory</span>
+        <span class="term-aka">aka "State", "Persistent Context"</span>
+        <div class="term-tags"><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">How an agent <b>retains information</b> across interactions and sessions. <b>Short-term memory</b> is the current conversation context. <b>Long-term memory</b> stores preferences, past decisions, and learned facts in a database so the agent remembers you next time. Without memory, every conversation starts from scratch.</div>
+      <div class="term-analogy">Short-term memory is your whiteboard during a meeting — wiped afterward. Long-term memory is your notebook — you can flip back to it months later.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">A2A</span>
+        <span class="term-aka">Agent-to-Agent Protocol</span>
+        <div class="term-tags"><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">An open standard (by Google) enabling AI agents from <b>different vendors to communicate</b> with each other. While MCP connects an agent to tools, A2A connects agents to other agents — letting a travel-booking agent coordinate with a calendar agent, even if they were built by different companies.</div>
+      <div class="term-analogy">MCP is like plugging a device into a USB port. A2A is like two people exchanging business cards and agreeing on how they'll work together.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">Skills</span>
+        <div class="term-tags"><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">Reusable instruction sets that teach an agent <b>how to do a specific task well</b> — like creating spreadsheets, writing documents, or generating images. Instead of re-explaining the process every time, you package the best practices into a skill the agent can load on demand. Skills turn a general-purpose agent into a specialist.</div>
+      <div class="term-analogy">A recipe card for an AI chef. The chef (agent) is capable of cooking anything, but the recipe card (skill) gives it the exact steps, tips, and tricks for making a perfect soufflé every time.</div>
+    </div>
+
+    <div class="term">
+      <div class="term-header">
+        <span class="term-name">System Prompt</span>
+        <div class="term-tags"><span class="term-tag tag-p3">Part 3</span></div>
+      </div>
+      <div class="term-def">Hidden instructions given to an AI model <b>before</b> the user's conversation begins. It sets the agent's personality, rules, capabilities, and constraints. The user never sees it, but it shapes every response. This is how companies customize the same base model into different products.</div>
+      <div class="term-analogy">The employee handbook your new hire reads on day one. The customer never sees it, but it determines how the employee behaves, what they're allowed to do, and how they handle tricky situations.</div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left"><b>AI Agent Workshop</b> · Week 1</div>
+    <a href="AI_Timeline.html" class="nav-link next-link">Part 1: AI Evolution →</a>
+  </footer>
+
+</div>
+</body>
+</html>

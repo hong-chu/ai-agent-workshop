@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Part 3: AI Agents — AI Agent Workshop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0B1120;
+    color: #E2E8F0;
+  }
+
+  /* === BACKGROUND PATTERN === */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === NAV BAR === */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(11,17,32,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 40px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav .brand {
+    font-size: 15px; font-weight: 700; color: #F8FAFC;
+    letter-spacing: -0.3px;
+  }
+  nav .brand span { color: #60A5FA; }
+  nav .links { display: flex; gap: 6px; }
+  nav .links a {
+    font-size: 13px; font-weight: 500; color: #64748B;
+    text-decoration: none; padding: 6px 14px; border-radius: 8px;
+    transition: all 0.2s;
+  }
+  nav .links a:hover { color: #CBD5E1; background: rgba(255,255,255,0.05); }
+  nav .links a.active {
+    color: #F1F5F9; background: rgba(255,255,255,0.08);
+    font-weight: 600;
+  }
+
+  /* === MAIN CONTENT === */
+  .page {
+    max-width: 1200px; margin: 0 auto;
+    padding: 100px 30px 60px;
+    position: relative; z-index: 1;
+  }
+
+  /* === PAGE HEADER === */
+  .part-label {
+    text-align: center; font-size: 12px; font-weight: 700;
+    letter-spacing: 2.5px; color: #34D399;
+    margin-bottom: 12px;
+    animation: fadeInDown 0.6s ease both;
+  }
+  h1 {
+    font-size: 48px; font-weight: 800; text-align: center;
+    color: #F8FAFC; margin-bottom: 8px; letter-spacing: -1px;
+    animation: fadeInDown 0.6s ease 0.1s both;
+  }
+  .sub {
+    text-align: center; font-size: 18px; color: #64748B;
+    margin-bottom: 14px;
+    animation: fadeInDown 0.6s ease 0.15s both;
+  }
+  .intro {
+    text-align: center; font-size: 16px; color: #94A3B8;
+    max-width: 720px; margin: 0 auto 56px; line-height: 1.7;
+    animation: fadeInDown 0.6s ease 0.2s both;
+  }
+
+  /* === SECTION HEADERS === */
+  .section-header {
+    margin-bottom: 32px;
+  }
+  .section-header .section-num {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #475569; margin-bottom: 8px;
+  }
+  .section-header h2 {
+    font-size: 32px; font-weight: 800; color: #F1F5F9;
+    letter-spacing: -0.5px;
+  }
+  .section-header .section-sub {
+    font-size: 15px; color: #64748B; margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* === DIVIDER === */
+  .divider {
+    text-align: center;
+    margin: 72px 0 56px;
+    position: relative;
+  }
+  .divider::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  }
+  .divider span {
+    position: relative; z-index: 1;
+    background: #0B1120;
+    padding: 0 24px;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 2px; color: #475569;
+    text-transform: uppercase;
+  }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === WALKTHROUGH === */
+  .wt-container {
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.3s both;
+  }
+  .wt-user-msg {
+    max-width: 560px;
+    margin: 0 auto 32px;
+    padding: 18px 24px;
+    border-radius: 20px 20px 20px 4px;
+    background: rgba(96,165,250,0.1);
+    border: 1px solid rgba(96,165,250,0.2);
+    font-size: 15px; color: #CBD5E1; line-height: 1.5;
+  }
+  .wt-user-msg .wt-user-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    color: #60A5FA; margin-bottom: 6px;
+  }
+  .wt-steps {
+    display: flex; flex-direction: column; gap: 0;
+    position: relative;
+    padding-left: 28px;
+  }
+  .wt-steps::before {
+    content: '';
+    position: absolute;
+    left: 13px; top: 24px; bottom: 24px;
+    width: 2px;
+    background: linear-gradient(to bottom, rgba(96,165,250,0.3), rgba(168,85,247,0.3), rgba(251,191,36,0.3), rgba(52,211,153,0.3));
+  }
+  .wt-step {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding: 12px 0;
+    position: relative;
+  }
+  .wt-dot {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .wt-step-content {
+    flex: 1;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+  }
+  .wt-step-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .wt-step-title {
+    font-size: 14px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 4px;
+  }
+  .wt-step-desc {
+    font-size: 13px; color: #94A3B8; line-height: 1.6;
+  }
+  .wt-step-desc code {
+    font-size: 11.5px; color: #CBD5E1;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 6px; border-radius: 4px;
+  }
+  .wt-agent-thought {
+    font-size: 12.5px; color: #A78BFA; font-style: italic;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(168,85,247,0.06);
+    border-left: 3px solid rgba(168,85,247,0.25);
+    margin-top: 8px;
+  }
+  .wt-tool-call {
+    font-size: 12px; color: #FBBF24;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: rgba(251,191,36,0.06);
+    border-left: 3px solid rgba(251,191,36,0.25);
+    margin-top: 8px;
+    font-family: monospace;
+  }
+  .wt-result {
+    font-size: 12px; color: #34D399;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: rgba(52,211,153,0.06);
+    border-left: 3px solid rgba(52,211,153,0.25);
+    margin-top: 6px;
+  }
+
+  /* === ANATOMY DIAGRAM === */
+  .anatomy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .anatomy-card {
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+  }
+  .anatomy-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+  .anatomy-title {
+    font-size: 17px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 6px;
+  }
+  .anatomy-desc {
+    font-size: 13.5px; color: #94A3B8; line-height: 1.65;
+  }
+  .anatomy-items {
+    margin-top: 10px;
+    font-size: 12.5px; color: #CBD5E1; line-height: 1.8;
+  }
+  .anatomy-items span {
+    display: inline-block;
+    padding: 2px 10px;
+    margin: 2px 4px 2px 0;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    font-size: 12px;
+  }
+
+  /* === EVOLUTION TIMELINE (CHATBOT → AGENT) === */
+  .evo-grid {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr 60px 1fr;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.3s both;
+  }
+  .evo-card {
+    padding: 28px 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .evo-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .evo-icon {
+    font-size: 36px; margin-bottom: 12px;
+  }
+  .evo-title {
+    font-size: 18px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 6px;
+  }
+  .evo-desc {
+    font-size: 13px; color: #94A3B8; line-height: 1.6;
+  }
+  .evo-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    padding: 4px 10px; border-radius: 6px; display: inline-block;
+    margin-bottom: 10px;
+  }
+  .evo-arrow {
+    text-align: center;
+    font-size: 24px;
+    color: #475569;
+  }
+
+  /* === AGENTIC LOOP DIAGRAM === */
+  .loop-container {
+    display: flex;
+    justify-content: center;
+    margin: 40px 0 48px;
+    animation: fadeInUp 0.5s ease 0.3s both;
+  }
+  .loop-diagram {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 32px 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(52,211,153,0.15);
+    background: rgba(52,211,153,0.03);
+  }
+  .loop-step {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px;
+  }
+  .loop-icon {
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  .loop-icon.li-perceive { background: rgba(96,165,250,0.15); }
+  .loop-icon.li-reason { background: rgba(168,85,247,0.15); }
+  .loop-icon.li-act { background: rgba(251,191,36,0.15); }
+  .loop-icon.li-observe { background: rgba(52,211,153,0.15); }
+  .loop-label {
+    font-size: 12px; font-weight: 700; color: #94A3B8;
+    letter-spacing: 0.5px;
+  }
+  .loop-arrow {
+    font-size: 20px; color: #475569; margin: 0 4px;
+  }
+  .loop-return {
+    font-size: 14px; color: #34D399; font-weight: 700;
+    margin-left: 12px;
+  }
+
+  /* === PATTERN CARDS === */
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .pattern-card {
+    padding: 28px 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.3s;
+  }
+  .pattern-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .pattern-icon {
+    font-size: 28px; margin-bottom: 14px;
+  }
+  .pattern-name {
+    font-size: 17px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 8px;
+  }
+  .pattern-desc {
+    font-size: 13.5px; color: #94A3B8; line-height: 1.65;
+  }
+  .pattern-example {
+    margin-top: 12px;
+    font-size: 12px; color: #64748B; font-style: italic;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid rgba(96,165,250,0.3);
+  }
+
+  /* === TOOL CARDS (AGENT PRODUCTS) === */
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  .tool-card {
+    padding: 28px 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.3s;
+  }
+  .tool-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .tool-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 14px;
+  }
+  .tool-logo {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+  }
+  .tool-meta {
+    flex: 1;
+  }
+  .tool-name {
+    font-size: 17px; font-weight: 700; color: #F1F5F9;
+  }
+  .tool-by {
+    font-size: 12px; color: #64748B;
+  }
+  .tool-tags {
+    display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;
+  }
+  .tool-tag {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 6px;
+    background: rgba(255,255,255,0.06); color: #94A3B8;
+  }
+  .tool-tag.t-code { color: #60A5FA; background: rgba(96,165,250,0.1); }
+  .tool-tag.t-general { color: #34D399; background: rgba(52,211,153,0.1); }
+  .tool-tag.t-browser { color: #FBBF24; background: rgba(251,191,36,0.1); }
+  .tool-tag.t-multi { color: #A855F7; background: rgba(168,85,247,0.1); }
+  .tool-tag.t-enterprise { color: #F472B6; background: rgba(244,114,182,0.1); }
+  .tool-desc {
+    font-size: 13.5px; color: #94A3B8; line-height: 1.65;
+  }
+  .tool-stat {
+    margin-top: 12px;
+    font-size: 12px; font-weight: 600; color: #34D399;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(52,211,153,0.06);
+  }
+
+  /* === FRAMEWORK COMPARISON TABLE === */
+  .fw-table-wrap {
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .fw-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .fw-table th {
+    background: rgba(255,255,255,0.04);
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.5px; color: #94A3B8;
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .fw-table td {
+    font-size: 13.5px; color: #CBD5E1;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .fw-table tr:last-child td { border-bottom: none; }
+  .fw-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .fw-name {
+    font-weight: 700; color: #F1F5F9;
+  }
+  .fw-company {
+    font-size: 11px; color: #64748B; display: block;
+  }
+  .fw-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 2px 8px; border-radius: 4px; display: inline-block;
+  }
+  .fw-badge.pop { color: #34D399; background: rgba(52,211,153,0.1); }
+  .fw-badge.grow { color: #FBBF24; background: rgba(251,191,36,0.1); }
+  .fw-badge.new { color: #60A5FA; background: rgba(96,165,250,0.1); }
+
+  /* === USE CASE CARDS === */
+  .usecase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .usecase-card {
+    padding: 28px 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.3s;
+  }
+  .usecase-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .uc-icon {
+    font-size: 28px; margin-bottom: 14px;
+  }
+  .uc-title {
+    font-size: 17px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 8px;
+  }
+  .uc-desc {
+    font-size: 13.5px; color: #94A3B8; line-height: 1.65;
+    margin-bottom: 10px;
+  }
+  .uc-examples {
+    font-size: 12px; color: #64748B; line-height: 1.5;
+  }
+  .uc-examples b { color: #94A3B8; }
+
+  /* === PROTOCOL COMPARISON (MCP vs A2A) === */
+  .proto-grid {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 0;
+    align-items: start;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .proto-card {
+    padding: 28px 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+  }
+  .proto-title {
+    font-size: 22px; font-weight: 800; color: #F1F5F9;
+    margin-bottom: 4px;
+  }
+  .proto-full {
+    font-size: 12px; color: #64748B; margin-bottom: 12px;
+  }
+  .proto-by {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 6px;
+    display: inline-block; margin-bottom: 14px;
+  }
+  .proto-desc {
+    font-size: 13.5px; color: #94A3B8; line-height: 1.65;
+    margin-bottom: 14px;
+  }
+  .proto-analogy {
+    font-size: 12.5px; color: #CBD5E1; line-height: 1.6;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+  }
+  .proto-analogy b { color: #F1F5F9; }
+  .proto-vs {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 800; color: #475569;
+  }
+
+  /* === SAFETY SECTION === */
+  .safety-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .safety-card {
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+  }
+  .safety-icon {
+    font-size: 24px; margin-bottom: 12px;
+  }
+  .safety-title {
+    font-size: 16px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 8px;
+  }
+  .safety-desc {
+    font-size: 13.5px; color: #94A3B8; line-height: 1.65;
+  }
+  .safety-risk {
+    margin-top: 10px;
+    font-size: 12px; color: #F87171;
+    padding: 8px 12px; border-radius: 8px;
+    background: rgba(248,113,113,0.06);
+    border-left: 3px solid rgba(248,113,113,0.3);
+  }
+  .safety-solution {
+    margin-top: 8px;
+    font-size: 12px; color: #34D399;
+    padding: 8px 12px; border-radius: 8px;
+    background: rgba(52,211,153,0.06);
+    border-left: 3px solid rgba(52,211,153,0.3);
+  }
+
+  /* === KEY INSIGHT CALLOUT === */
+  .insight {
+    padding: 24px 28px;
+    border-radius: 16px;
+    border: 1px solid rgba(251,191,36,0.15);
+    background: rgba(251,191,36,0.04);
+    margin: 32px 0 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .insight-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #FBBF24; margin-bottom: 8px;
+  }
+  .insight-text {
+    font-size: 15px; color: #CBD5E1; line-height: 1.7;
+  }
+  .insight-text b { color: #F1F5F9; }
+
+  /* === LAYER DIAGRAM === */
+  .layer-stack {
+    display: flex; flex-direction: column; gap: 6px;
+    max-width: 680px; margin: 0 auto 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .layer {
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+  }
+  .layer-num {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+  }
+  .layer-content {
+    flex: 1;
+  }
+  .layer-name {
+    font-size: 15px; font-weight: 700; color: #F1F5F9;
+  }
+  .layer-desc {
+    font-size: 12.5px; color: #94A3B8;
+  }
+
+  /* === FOOTER === */
+  footer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 30px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    position: relative; z-index: 1;
+  }
+  footer .footer-left {
+    font-size: 13px; color: #475569;
+  }
+  .nav-link {
+    font-size: 14px; font-weight: 600;
+    color: #60A5FA; text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-link:hover { color: #93C5FD; }
+  .prev-link::before { content: '← '; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">AI Agent <span>Workshop</span></div>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="AI_Vocabulary.html">Part 0: Vocabulary</a>
+    <a href="AI_Timeline.html">Part 1: AI Evolution</a>
+    <a href="AI_Companies.html">Part 2: Companies</a>
+    <a href="AI_Agents.html" class="active">Part 3: Agents</a>
+    <a href="AI_OpenClaw.html">Part 4: OpenClaw</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="part-label">PART 3</div>
+  <h1>AI Agents</h1>
+  <p class="sub">From chatbots to autonomous coworkers</p>
+  <p class="intro">The biggest shift in AI isn't better models — it's models that can <b>do things</b>. Agents plan, use tools, learn from feedback, and complete multi-step tasks autonomously. This is where AI goes from "impressive demo" to "actually useful at work."</p>
+
+  <!-- ================================ -->
+  <!-- SECTION 1: THE EVOLUTION         -->
+  <!-- ================================ -->
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <h2>The Evolution: Chatbot → Copilot → Agent</h2>
+    <div class="section-sub">Three paradigms, each building on the last</div>
+  </div>
+
+  <div class="evo-grid">
+    <div class="evo-card">
+      <div class="evo-label" style="color:#60A5FA; background:rgba(96,165,250,0.12);">2022–2023</div>
+      <div class="evo-icon">💬</div>
+      <div class="evo-title">Chatbot</div>
+      <div class="evo-desc">Human asks a question, AI answers it. One turn at a time. No memory, no tools, no initiative. You drive the conversation entirely.</div>
+    </div>
+    <div class="evo-arrow">→</div>
+    <div class="evo-card">
+      <div class="evo-label" style="color:#A855F7; background:rgba(168,85,247,0.12);">2023–2024</div>
+      <div class="evo-icon">🤝</div>
+      <div class="evo-title">Copilot</div>
+      <div class="evo-desc">AI assists you while you work — autocomplete, suggestions, drafts. You stay in control. Think GitHub Copilot: it writes code <em>for</em> you, but you review every line.</div>
+    </div>
+    <div class="evo-arrow">→</div>
+    <div class="evo-card">
+      <div class="evo-label" style="color:#34D399; background:rgba(52,211,153,0.12);">2025–NOW</div>
+      <div class="evo-icon">🤖</div>
+      <div class="evo-title">Agent</div>
+      <div class="evo-desc">You give a <b>goal</b>. The AI plans the steps, picks the right tools, executes them, checks the result, and loops until done. You approve; it does the work.</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">💡 KEY INSIGHT</div>
+    <div class="insight-text">The difference isn't intelligence — it's <b>autonomy</b>. A chatbot waits for you. A copilot suggests to you. An agent <b>works for you</b>. The underlying model can be the same; what changes is the scaffolding around it: tool access, memory, planning loops, and permission to act.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 2: HOW AN AGENT WORKS     -->
+  <!-- ================================ -->
+  <div class="divider"><span>HOW IT ACTUALLY WORKS</span></div>
+
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <h2>Anatomy of an Agent</h2>
+    <div class="section-sub">What's inside the box — and how the pieces fit together</div>
+  </div>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:32px; max-width:800px;">An agent isn't just a model. It's a model wrapped in a <b style="color:#F1F5F9;">system</b> that gives it tools, skills, memory, and a loop. Here are the key components:</p>
+
+  <div class="anatomy-grid">
+    <div class="anatomy-card">
+      <div class="anatomy-label" style="color:#60A5FA;">THE BRAIN</div>
+      <div class="anatomy-title">LLM (the model)</div>
+      <div class="anatomy-desc">The reasoning engine. It reads the user's request, thinks about what to do, and decides which tool to call next. The model itself can't do anything in the real world — it can only output text. Everything else comes from the system around it.</div>
+    </div>
+    <div class="anatomy-card">
+      <div class="anatomy-label" style="color:#FBBF24;">THE HANDS</div>
+      <div class="anatomy-title">Tools (via MCP)</div>
+      <div class="anatomy-desc">Tools let the agent <b>do things</b> — read files, search the web, query databases, send messages, run code. <b>MCP</b> (Model Context Protocol) is the universal adapter: instead of custom integrations for each tool, MCP provides a standard way for any agent to discover and use any tool.</div>
+      <div class="anatomy-items">
+        <span>📁 Read/write files</span>
+        <span>🌐 Browse web</span>
+        <span>💻 Run code</span>
+        <span>📧 Send email</span>
+        <span>🗄️ Query database</span>
+        <span>📅 Manage calendar</span>
+      </div>
+    </div>
+    <div class="anatomy-card">
+      <div class="anatomy-label" style="color:#A855F7;">THE PLAYBOOK</div>
+      <div class="anatomy-title">Skills</div>
+      <div class="anatomy-desc">Reusable instruction sets that teach the agent <b>how to do a specific task well</b>. When you ask "create a presentation," the agent loads a PPTX skill that contains best practices, formatting rules, and step-by-step procedures. Skills turn a generalist into a specialist — without retraining the model.</div>
+      <div class="anatomy-items">
+        <span>📊 Spreadsheet skill</span>
+        <span>📄 PDF skill</span>
+        <span>📑 Slides skill</span>
+        <span>✍️ Document skill</span>
+        <span>🔍 Research skill</span>
+        <span>💻 Coding skill</span>
+      </div>
+    </div>
+    <div class="anatomy-card">
+      <div class="anatomy-label" style="color:#34D399;">THE MEMORY</div>
+      <div class="anatomy-title">Context & State</div>
+      <div class="anatomy-desc">The conversation so far, the results of every tool call, and any long-term memory from past sessions. This is what the model "sees" at each step. Good context engineering = making sure the model has exactly the right information to make its next decision.</div>
+    </div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 2b: WALKTHROUGH           -->
+  <!-- ================================ -->
+  <div class="section-header" style="margin-top:20px;">
+    <div class="section-num" style="color:#475569;">02b</div>
+    <h2>A Real Example: Watch an Agent Work</h2>
+    <div class="section-sub">Step by step — how an agent breaks down a task, picks tools, and loops until done</div>
+  </div>
+
+  <div class="wt-container">
+    <div class="wt-user-msg">
+      <div class="wt-user-label">👤 YOU</div>
+      "Analyze last quarter's sales data in my spreadsheet and create a presentation with the key findings."
+    </div>
+
+    <div class="wt-steps">
+      <!-- Step 1: Break down -->
+      <div class="wt-step">
+        <div class="wt-dot" style="background:rgba(168,85,247,0.25); color:#A855F7;">🧠</div>
+        <div class="wt-step-content">
+          <div class="wt-step-label" style="color:#A855F7;">STEP 1 — PLAN</div>
+          <div class="wt-step-title">Agent breaks the task into subtasks</div>
+          <div class="wt-agent-thought">
+            "This is a multi-step task. I need to: (1) read the spreadsheet, (2) analyze the data, (3) identify key findings, (4) create a presentation. Let me start by loading the right skills."
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Load skills -->
+      <div class="wt-step">
+        <div class="wt-dot" style="background:rgba(168,85,247,0.25); color:#A855F7;">📋</div>
+        <div class="wt-step-content">
+          <div class="wt-step-label" style="color:#A855F7;">STEP 2 — LOAD SKILLS</div>
+          <div class="wt-step-title">Agent loads specialized skills</div>
+          <div class="wt-step-desc">The agent recognizes it needs the <b>XLSX skill</b> (how to read and analyze spreadsheets) and the <b>PPTX skill</b> (how to create polished slides). These skills contain best practices — like chart types, formatting rules, and slide layouts — so the agent doesn't have to figure it out from scratch.</div>
+          <div class="wt-tool-call">load_skill("xlsx") → 📊 spreadsheet best practices loaded</div>
+          <div class="wt-tool-call">load_skill("pptx") → 📑 presentation best practices loaded</div>
+        </div>
+      </div>
+
+      <!-- Step 3: Use MCP tools -->
+      <div class="wt-step">
+        <div class="wt-dot" style="background:rgba(251,191,36,0.25); color:#FBBF24;">⚡</div>
+        <div class="wt-step-content">
+          <div class="wt-step-label" style="color:#FBBF24;">STEP 3 — ACT (via MCP tools)</div>
+          <div class="wt-step-title">Agent reads the spreadsheet using a tool</div>
+          <div class="wt-step-desc">The agent calls a <b>file read tool</b> (connected via MCP) to open the spreadsheet. MCP means the agent doesn't need custom code for Excel — it just asks the MCP server "read this file" and gets structured data back.</div>
+          <div class="wt-tool-call">mcp_tool("filesystem", "read_file", {path: "Q4_Sales.xlsx"})</div>
+          <div class="wt-result">✅ Got 2,847 rows × 12 columns — revenue, region, product, date...</div>
+        </div>
+      </div>
+
+      <!-- Step 4: Analyze -->
+      <div class="wt-step">
+        <div class="wt-dot" style="background:rgba(251,191,36,0.25); color:#FBBF24;">⚡</div>
+        <div class="wt-step-content">
+          <div class="wt-step-label" style="color:#FBBF24;">STEP 4 — ACT</div>
+          <div class="wt-step-title">Agent writes and runs analysis code</div>
+          <div class="wt-step-desc">The agent writes Python code to analyze the data — revenue trends, top products, regional breakdown. It runs the code using a <b>code execution tool</b>.</div>
+          <div class="wt-tool-call">execute_code("python", "import pandas as pd; df = pd.read_excel(...);\ndf.groupby('region')['revenue'].sum()...")</div>
+          <div class="wt-result">✅ Analysis complete — APAC up 23%, top product: Enterprise Suite, Q4 total: $4.2M</div>
+        </div>
+      </div>
+
+      <!-- Step 5: Observe & adjust -->
+      <div class="wt-step">
+        <div class="wt-dot" style="background:rgba(52,211,153,0.25); color:#34D399;">👁</div>
+        <div class="wt-step-content">
+          <div class="wt-step-label" style="color:#34D399;">STEP 5 — OBSERVE</div>
+          <div class="wt-step-title">Agent reviews results and adjusts</div>
+          <div class="wt-agent-thought">
+            "The analysis is done. I found 4 key findings. But I notice the EMEA data has some missing values — let me handle those before creating the slides. This is the self-correction loop in action."
+          </div>
+          <div class="wt-tool-call">execute_code("python", "df['revenue'].fillna(df['revenue'].median())...")</div>
+          <div class="wt-result">✅ Missing values handled — revised EMEA total: $890K (was showing $720K)</div>
+        </div>
+      </div>
+
+      <!-- Step 6: Create output -->
+      <div class="wt-step">
+        <div class="wt-dot" style="background:rgba(251,191,36,0.25); color:#FBBF24;">⚡</div>
+        <div class="wt-step-content">
+          <div class="wt-step-label" style="color:#FBBF24;">STEP 6 — ACT</div>
+          <div class="wt-step-title">Agent creates the presentation (using PPTX skill)</div>
+          <div class="wt-step-desc">Following the PPTX skill's best practices, the agent creates slides with a title slide, executive summary, revenue chart, regional breakdown, top products, and recommendations. The skill tells it things like "use 28pt for titles" and "no more than 5 bullets per slide."</div>
+          <div class="wt-tool-call">create_file("Q4_Sales_Review.pptx", slides=[...])</div>
+          <div class="wt-result">✅ 8-slide presentation created with charts and key findings</div>
+        </div>
+      </div>
+
+      <!-- Step 7: Deliver -->
+      <div class="wt-step">
+        <div class="wt-dot" style="background:rgba(52,211,153,0.25); color:#34D399;">✅</div>
+        <div class="wt-step-content">
+          <div class="wt-step-label" style="color:#34D399;">STEP 7 — DONE</div>
+          <div class="wt-step-title">Agent delivers the result</div>
+          <div class="wt-step-desc">The agent links you the finished presentation and summarizes the key findings. Total: <b>7 tool calls, 2 skills loaded, 1 self-correction</b> — all from a single sentence request.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">🔁 THE LOOP IS THE KEY</div>
+    <div class="insight-text">Notice the pattern: <b>Think → Act → Observe → Repeat</b>. The agent didn't just run one command — it made a plan, executed it step by step, caught a data issue mid-way, fixed it, and continued. Without the loop, it would have created a presentation with wrong EMEA numbers. <b>Self-correction is what separates agents from simple automation.</b></div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 2c: SKILLS DEEP DIVE     -->
+  <!-- ================================ -->
+  <div class="divider"><span>SKILLS: THE SECRET WEAPON</span></div>
+
+  <div class="section-header">
+    <div class="section-num" style="color:#475569;">02c</div>
+    <h2>Skills: What They Are and Why They Matter</h2>
+    <div class="section-sub">The difference between an agent that sort-of works and one that nails it every time</div>
+  </div>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:32px; max-width:860px;">People often confuse <b style="color:#F1F5F9;">tools</b> and <b style="color:#F1F5F9;">skills</b>. They sound similar, but they solve completely different problems. Understanding this distinction is key to understanding how modern agents work.</p>
+
+  <!-- Tools vs Skills comparison -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:36px;">
+    <div style="padding:24px; border-radius:16px; border:1px solid rgba(251,191,36,0.15); background:rgba(251,191,36,0.03);">
+      <div style="font-size:11px; font-weight:800; letter-spacing:1.5px; color:#FBBF24; margin-bottom:8px;">🔧 TOOLS (via MCP)</div>
+      <div style="font-size:20px; font-weight:800; color:#F1F5F9; margin-bottom:10px;">The Hands</div>
+      <div style="font-size:14px; color:#94A3B8; line-height:1.7; margin-bottom:14px;">Tools give the agent the <b style="color:#F1F5F9;">ability</b> to do something. Read a file. Send an email. Query a database. Run code. Without tools, the agent can only talk — it can't act.</div>
+      <div style="font-size:13px; color:#CBD5E1; line-height:1.7;">
+        <b>Analogy:</b> A tool is like giving someone a <span style="color:#FBBF24;">hammer</span>. Now they <em>can</em> hammer nails. But they don't know where, how hard, or in what order.
+      </div>
+      <div style="margin-top:14px; padding:12px 16px; border-radius:10px; background:rgba(255,255,255,0.03); font-family:monospace; font-size:12px; color:#CBD5E1; line-height:1.6; border:1px solid rgba(255,255,255,0.06);">
+        tool: read_file(path)<br>
+        tool: send_email(to, subject, body)<br>
+        tool: run_python(code)<br>
+        tool: search_web(query)
+      </div>
+    </div>
+    <div style="padding:24px; border-radius:16px; border:1px solid rgba(168,85,247,0.15); background:rgba(168,85,247,0.03);">
+      <div style="font-size:11px; font-weight:800; letter-spacing:1.5px; color:#A855F7; margin-bottom:8px;">📋 SKILLS</div>
+      <div style="font-size:20px; font-weight:800; color:#F1F5F9; margin-bottom:10px;">The Playbook</div>
+      <div style="font-size:14px; color:#94A3B8; line-height:1.7; margin-bottom:14px;">Skills give the agent the <b style="color:#F1F5F9;">knowledge</b> of how to do something well. Best practices, formatting rules, step-by-step procedures, pitfalls to avoid. Without skills, the agent can act — but makes amateur mistakes.</div>
+      <div style="font-size:13px; color:#CBD5E1; line-height:1.7;">
+        <b>Analogy:</b> A skill is like giving someone an <span style="color:#A855F7;">instruction manual</span>. "Use 28pt titles. No more than 5 bullets. Always add a summary slide at the end."
+      </div>
+      <div style="margin-top:14px; padding:12px 16px; border-radius:10px; background:rgba(255,255,255,0.03); font-family:monospace; font-size:12px; color:#CBD5E1; line-height:1.6; border:1px solid rgba(255,255,255,0.06);">
+        skill: "Use python-pptx library"<br>
+        skill: "Title slides use 36pt bold"<br>
+        skill: "Max 5 bullets per slide"<br>
+        skill: "Always end with a summary"
+      </div>
+    </div>
+  </div>
+
+  <!-- The key distinction -->
+  <div class="insight" style="margin-top:0; margin-bottom:36px;">
+    <div class="insight-label">💡 THE KEY DISTINCTION</div>
+    <div class="insight-text"><b>Tools = what the agent CAN do.</b> Skills = what the agent KNOWS about doing it well. You need both. An agent with tools but no skills is like a chef with a kitchen full of equipment but no recipes — they'll figure it out eventually, but the result will be inconsistent. <b>Skills are what make agents reliable.</b></div>
+  </div>
+
+  <!-- How a Skill Works Inside -->
+  <div style="margin-bottom:36px;">
+    <div style="font-size:11px; font-weight:800; letter-spacing:1.5px; color:#A855F7; margin-bottom:12px;">HOW A SKILL WORKS INSIDE</div>
+    <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:20px; max-width:860px;">A skill is just a <b style="color:#F1F5F9;">text file</b> (usually Markdown) that gets injected into the agent's prompt when it's needed. Here's a simplified example of what the PPTX skill looks like:</p>
+
+    <div style="padding:20px 24px; border-radius:16px; border:1px solid rgba(168,85,247,0.15); background:rgba(0,0,0,0.25); font-family:monospace; font-size:12px; color:#CBD5E1; line-height:1.8; margin-bottom:20px;">
+      <div style="color:#A855F7; font-weight:700; margin-bottom:8px;"># SKILL.md — Presentation Builder</div>
+      <br>
+      <div style="color:#64748B;">## When to use this skill</div>
+      <div>Trigger when user asks to create slides, a deck, or a .pptx file.</div>
+      <br>
+      <div style="color:#64748B;">## Required library</div>
+      <div>Use python-pptx. Install with: pip install python-pptx</div>
+      <br>
+      <div style="color:#64748B;">## Formatting rules</div>
+      <div>- Title slides: 36pt bold, centered</div>
+      <div>- Body text: 18pt, left-aligned</div>
+      <div>- Max 5 bullet points per slide</div>
+      <div>- Use the company color palette: #0B1120, #60A5FA, #F1F5F9</div>
+      <div>- Every deck must end with a "Key Takeaways" slide</div>
+      <br>
+      <div style="color:#64748B;">## Step-by-step process</div>
+      <div>1. Create a blank presentation with 16:9 aspect ratio</div>
+      <div>2. Add title slide with the topic and date</div>
+      <div>3. For each section, create a header slide + content slides</div>
+      <div>4. Add charts using matplotlib, saved as images</div>
+      <div>5. Add a summary slide at the end</div>
+      <div>6. Save to the output folder</div>
+      <br>
+      <div style="color:#64748B;">## Common mistakes to avoid</div>
+      <div>- Don't put more than 40 words on a single slide</div>
+      <div>- Don't use font sizes below 14pt</div>
+      <div>- Always include slide numbers</div>
+    </div>
+
+    <p style="font-size:14px; color:#94A3B8; line-height:1.7; max-width:860px;">When you say "make me a presentation about Q2 results," the agent recognizes the task, loads this skill into its prompt, and now has expert-level knowledge about how to build great slides. The skill doesn't give it new abilities — it already has the <code style="color:#CBD5E1; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px;">write_file</code> tool. The skill tells it <em>how to use that ability well</em>.</p>
+  </div>
+
+  <!-- The loading flow -->
+  <div style="display:flex; align-items:center; justify-content:center; gap:8px; padding:20px 28px; border-radius:16px; border:1px solid rgba(168,85,247,0.15); background:rgba(168,85,247,0.03); margin-bottom:36px; flex-wrap:wrap;">
+    <div style="padding:10px 16px; border-radius:10px; font-size:13px; font-weight:600; background:rgba(96,165,250,0.12); color:#60A5FA; border:1px solid rgba(96,165,250,0.2);">"Make me a presentation"</div>
+    <div style="color:#475569; font-size:16px;">→</div>
+    <div style="padding:10px 16px; border-radius:10px; font-size:13px; font-weight:600; background:rgba(168,85,247,0.12); color:#A855F7; border:1px solid rgba(168,85,247,0.2);">Agent detects: PPTX task</div>
+    <div style="color:#475569; font-size:16px;">→</div>
+    <div style="padding:10px 16px; border-radius:10px; font-size:13px; font-weight:600; background:rgba(251,191,36,0.12); color:#FBBF24; border:1px solid rgba(251,191,36,0.2);">Loads PPTX SKILL.md</div>
+    <div style="color:#475569; font-size:16px;">→</div>
+    <div style="padding:10px 16px; border-radius:10px; font-size:13px; font-weight:600; background:rgba(52,211,153,0.12); color:#34D399; border:1px solid rgba(52,211,153,0.2);">Skill injected into prompt</div>
+    <div style="color:#475569; font-size:16px;">→</div>
+    <div style="padding:10px 16px; border-radius:10px; font-size:13px; font-weight:600; background:rgba(244,63,94,0.12); color:#F43F5E; border:1px solid rgba(244,63,94,0.2);">Agent follows the playbook</div>
+  </div>
+
+  <!-- Skills Ecosystem -->
+  <div style="margin-bottom:36px;">
+    <div style="font-size:11px; font-weight:800; letter-spacing:1.5px; color:#34D399; margin-bottom:12px;">THE SKILLS ECOSYSTEM</div>
+    <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:20px; max-width:860px;">Skills aren't just built-in defaults — they're <b style="color:#F1F5F9;">shareable, installable, and community-driven</b>. The same concept appears across every major agent platform:</p>
+
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:24px;">
+      <div style="padding:20px; border-radius:14px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02);">
+        <div style="font-size:22px; margin-bottom:8px;">🏪</div>
+        <div style="font-size:15px; font-weight:700; color:#F1F5F9; margin-bottom:6px;">Skill Marketplaces</div>
+        <div style="font-size:13px; color:#94A3B8; line-height:1.6;">OpenClaw has <b style="color:#CBD5E1;">ClawHub</b> (5,400+ skills). Claude Code has built-in skills. Cursor has rules. The pattern is the same: a library of expert knowledge anyone can install with one click.</div>
+      </div>
+      <div style="padding:20px; border-radius:14px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02);">
+        <div style="font-size:22px; margin-bottom:8px;">👥</div>
+        <div style="font-size:15px; font-weight:700; color:#F1F5F9; margin-bottom:6px;">Community-Built</div>
+        <div style="font-size:13px; color:#94A3B8; line-height:1.6;">Anyone can write a skill and share it. A financial analyst writes a "DCF modeling" skill. A designer writes a "brand guidelines" skill. Knowledge that used to live in people's heads becomes <b style="color:#CBD5E1;">portable and reusable</b>.</div>
+      </div>
+      <div style="padding:20px; border-radius:14px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02);">
+        <div style="font-size:22px; margin-bottom:8px;">🔄</div>
+        <div style="font-size:15px; font-weight:700; color:#F1F5F9; margin-bottom:6px;">Version-Controlled</div>
+        <div style="font-size:13px; color:#94A3B8; line-height:1.6;">Skills are text files. They live in Git. When someone discovers a better approach ("use 32pt, not 28pt for titles"), they update the skill and everyone benefits. Knowledge evolves like open-source code.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Why this is a big deal -->
+  <div class="insight" style="border-color:rgba(168,85,247,0.15); background:rgba(168,85,247,0.04);">
+    <div class="insight-label" style="color:#A855F7;">🎯 WHY SKILLS ARE A BIG DEAL</div>
+    <div class="insight-text">Before skills, every time you asked an AI to "make a presentation," you had to include formatting instructions in your prompt. Skills externalize that knowledge — write it once, reuse it forever. This is why agents are getting more reliable so fast: it's not just the models improving. It's the <b>accumulated expert knowledge in skill libraries</b> that makes the difference. Skills are to agents what apps are to smartphones — the thing that makes the platform actually useful.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 3: AGENT DESIGN PATTERNS -->
+  <!-- ================================ -->
+  <div class="divider"><span>DESIGN PATTERNS</span></div>
+
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <h2>Agent Design Patterns</h2>
+    <div class="section-sub">The building blocks that make agents reliable</div>
+  </div>
+
+  <div class="pattern-grid">
+    <div class="pattern-card">
+      <div class="pattern-icon">🔧</div>
+      <div class="pattern-name">Tool Use</div>
+      <div class="pattern-desc">The agent calls external tools via structured JSON — search APIs, databases, code interpreters, browsers. The model doesn't "know" the answer; it knows how to <b>find</b> it.</div>
+      <div class="pattern-example">Agent: "I need to check the weather." → calls <code>get_weather(city="Tokyo")</code> → gets 22°C → uses that in its response.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-icon">📋</div>
+      <div class="pattern-name">Planning</div>
+      <div class="pattern-desc">Before acting, the agent <b>creates a plan</b> — breaking a complex goal into ordered subtasks. Better agents revise the plan as they learn new information mid-execution.</div>
+      <div class="pattern-example">"Build a landing page" → Plan: 1) Research competitor pages 2) Draft HTML structure 3) Add styling 4) Write copy 5) Review & iterate</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-icon">🔄</div>
+      <div class="pattern-name">Reflection</div>
+      <div class="pattern-desc">The agent <b>critiques its own output</b> before returning it. A second pass catches errors, improves quality, and aligns the result with the original goal. Often uses a separate "reviewer" prompt.</div>
+      <div class="pattern-example">Agent writes code → reviews it → "This doesn't handle the empty array case" → fixes it → returns improved version.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-icon">👥</div>
+      <div class="pattern-name">Multi-Agent</div>
+      <div class="pattern-desc">Multiple specialized agents collaborate. A "researcher" gathers info, a "coder" writes code, a "reviewer" checks quality. An orchestrator coordinates them — like a small AI team.</div>
+      <div class="pattern-example">Orchestrator assigns a bug fix → Researcher finds the root cause → Coder writes the patch → Reviewer verifies the fix passes tests.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-icon">🛡️</div>
+      <div class="pattern-name">Human-in-the-Loop</div>
+      <div class="pattern-desc">The agent <b>pauses for approval</b> before high-stakes actions — sending emails, making purchases, deleting files. Balances automation with human oversight.</div>
+      <div class="pattern-example">"I'm about to send this email to 500 customers. Here's a preview — shall I proceed?" → Human: "Change the subject line, then send."</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-icon">💾</div>
+      <div class="pattern-name">Memory</div>
+      <div class="pattern-desc"><b>Short-term</b>: the current conversation. <b>Long-term</b>: stored facts, preferences, and past decisions the agent retrieves next time. Without memory, every interaction starts from zero.</div>
+      <div class="pattern-example">Agent remembers: "Yeesun prefers dark themes, uses React, and their team deploys on Fridays" — and applies this across future sessions.</div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION 4: PROMPT → CONTEXT → HARNESS        -->
+  <!-- ============================================ -->
+  <div class="divider"><span>THE SKILL EVOLUTION</span></div>
+
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <h2>Prompt → Context → Harness Engineering</h2>
+    <div class="section-sub">As AI got more capable, the bottleneck shifted — and so did the skill that matters most</div>
+  </div>
+
+  <p style="font-size:15px; color:#94A3B8; line-height:1.7; margin-bottom:36px; max-width:840px;">The most important shift in AI isn't the models getting smarter. It's <b style="color:#F1F5F9;">where the human effort goes</b>. In just three years, the bottleneck moved from "how do I ask the right question?" to "how do I build a system that works reliably without me?" Here's that story:</p>
+
+  <!-- THE THREE ERAS — DEEP DIVE -->
+  <div style="display:flex; flex-direction:column; gap:28px; margin-bottom:40px;">
+
+    <!-- ERA 1: PROMPT ENGINEERING -->
+    <div style="padding:28px; border-radius:16px; border:1px solid rgba(96,165,250,0.15); background:rgba(96,165,250,0.03);">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+        <div style="font-size:28px;">✍️</div>
+        <div>
+          <div style="font-size:10px; font-weight:700; letter-spacing:1px; color:#60A5FA;">ERA 1 · 2023–2024</div>
+          <div style="font-size:20px; font-weight:800; color:#F1F5F9;">Prompt Engineering</div>
+        </div>
+      </div>
+      <div style="font-size:14px; color:#CBD5E1; line-height:1.7; margin-bottom:14px;">
+        <b style="color:#F1F5F9;">The core question:</b> "How do I <em>ask</em> this better?"
+      </div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.7; margin-bottom:14px;">
+        The model is a black box. You type something in, you get something out. The only lever you have is <b>the words you use</b>. So people discovered tricks: give it a role ("You are a senior data analyst"), provide examples, ask it to "think step by step," structure your prompt with XML tags. The entire skill was about crafting that one perfect message.
+      </div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.7; margin-bottom:14px;">
+        <b style="color:#F1F5F9;">The limitation:</b> You're optimizing a single input. The model can only work with what you give it in that one message. It has no memory, no tools, no access to your files. If it doesn't know something, it guesses (hallucinates). You're essentially trying to fit your entire problem into one really good question.
+      </div>
+      <div class="wt-tool-call" style="border-left-color:rgba(96,165,250,0.3); color:#60A5FA; background:rgba(96,165,250,0.06);">
+        💬 "You are a financial analyst. Given this data: [paste 500 rows manually]. Analyze Q4 trends. Think step by step. Output as a table."
+      </div>
+      <div style="font-size:12px; color:#64748B; margin-top:8px; font-style:italic;">
+        ^ You're doing all the work — finding the data, formatting it, pasting it in, telling the model exactly how to think. The model just answers.
+      </div>
+    </div>
+
+    <!-- ERA 2: CONTEXT ENGINEERING -->
+    <div style="padding:28px; border-radius:16px; border:1px solid rgba(168,85,247,0.15); background:rgba(168,85,247,0.03);">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+        <div style="font-size:28px;">🧩</div>
+        <div>
+          <div style="font-size:10px; font-weight:700; letter-spacing:1px; color:#A855F7;">ERA 2 · 2025</div>
+          <div style="font-size:20px; font-weight:800; color:#F1F5F9;">Context Engineering</div>
+        </div>
+      </div>
+      <div style="font-size:14px; color:#CBD5E1; line-height:1.7; margin-bottom:14px;">
+        <b style="color:#F1F5F9;">The core question:</b> "What <em>information</em> does the model need to see?"
+      </div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.7; margin-bottom:14px;">
+        People realized: the prompt is just one piece of what the model "sees." The entire input — your instruction + retrieved documents + conversation history + tool results + memory from past sessions — is the <b>context</b>. And the quality of the output depends far more on <b>what's in the context</b> than on how cleverly you phrased the prompt.
+      </div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.7; margin-bottom:14px;">
+        <b style="color:#F1F5F9;">The breakthrough:</b> Instead of manually pasting data into a prompt, you build a system that <b>automatically retrieves</b> the right information. RAG pulls relevant documents from a database. MCP connects the model to your files, Slack, email, and databases. The model gets fresh, specific data at inference time — not just what you remembered to paste in.
+      </div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.7; margin-bottom:14px;">
+        <b style="color:#F1F5F9;">The limitation:</b> You've given the model great information, but it still works in a single shot. Ask → Answer. It can't try something, see if it worked, and try again. It can't use tools on its own. It's a well-informed advisor, but not a worker.
+      </div>
+      <div class="wt-tool-call" style="border-left-color:rgba(168,85,247,0.3); color:#A855F7; background:rgba(168,85,247,0.06);">
+        💬 User asks: "Analyze Q4 trends"<br>
+        🧩 System auto-retrieves: [Q4_Sales.xlsx via MCP] + [last quarter's analysis from memory] + [company KPI definitions from RAG]<br>
+        🧠 Model sees it all → generates a comprehensive analysis
+      </div>
+      <div style="font-size:12px; color:#64748B; margin-top:8px; font-style:italic;">
+        ^ The system assembles the right context automatically. You ask a short question, but the model sees everything it needs. The human designed the retrieval pipeline, not the prompt.
+      </div>
+    </div>
+
+    <!-- ERA 3: HARNESS ENGINEERING -->
+    <div style="padding:28px; border-radius:16px; border:1px solid rgba(52,211,153,0.15); background:rgba(52,211,153,0.03);">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+        <div style="font-size:28px;">⚙️</div>
+        <div>
+          <div style="font-size:10px; font-weight:700; letter-spacing:1px; color:#34D399;">ERA 3 · 2026</div>
+          <div style="font-size:20px; font-weight:800; color:#F1F5F9;">Harness Engineering</div>
+        </div>
+      </div>
+      <div style="font-size:14px; color:#CBD5E1; line-height:1.7; margin-bottom:14px;">
+        <b style="color:#F1F5F9;">The core question:</b> "How do I build a <em>system</em> that lets the model work reliably on its own?"
+      </div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.7; margin-bottom:14px;">
+        Now the model doesn't just answer — it <b>works</b>. It plans, uses tools, writes code, checks its own output, retries when things fail, and asks a human for approval before doing anything risky. But none of that autonomy comes from the model itself. It comes from the <b>harness</b> — the system of loops, tools, skills, guardrails, and approval flows built around the model.
+      </div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.7; margin-bottom:14px;">
+        <b style="color:#F1F5F9;">The analogy:</b> The model is a brilliant new hire. The harness is everything the company built to make that hire productive — onboarding docs (system prompt), a task management system (planning loop), access to internal tools (MCP), standard operating procedures (skills), a manager who approves big decisions (human-in-the-loop), and a process for when things go wrong (error recovery).
+      </div>
+      <div style="font-size:13.5px; color:#94A3B8; line-height:1.7; margin-bottom:14px;">
+        <b style="color:#F1F5F9;">The reality:</b> The humans writing the most impactful AI code today aren't writing prompts — they're building harnesses. They design the agentic loop, the tool integrations, the approval gates, the testing pipeline, and the error recovery strategies. The model is the engine; the harness is the car, the road, and the traffic signals.
+      </div>
+      <div class="wt-tool-call" style="border-left-color:rgba(52,211,153,0.3); color:#34D399; background:rgba(52,211,153,0.06);">
+        💬 User: "Analyze Q4 trends and present to the team"<br>
+        📋 Harness: plan → load xlsx skill → read file via MCP → run analysis code → self-correct data issues → load pptx skill → create deck → ⏸️ pause for human approval → send via email MCP → ✅ done
+      </div>
+      <div style="font-size:12px; color:#64748B; margin-top:8px; font-style:italic;">
+        ^ One sentence from the user. The harness orchestrates 10+ steps, multiple tools, 2 skills, a self-correction, and a human checkpoint. The prompt barely matters — the system does the work.
+      </div>
+    </div>
+  </div>
+
+  <!-- SAME TASK, THREE ERAS — comparison table -->
+  <div class="fw-table-wrap" style="margin-bottom:32px;">
+    <table class="fw-table">
+      <thead>
+        <tr>
+          <th style="width:22%;">Dimension</th>
+          <th style="width:26%;">✍️ Prompt Engineering</th>
+          <th style="width:26%;">🧩 Context Engineering</th>
+          <th style="width:26%;">⚙️ Harness Engineering</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b style="color:#F1F5F9;">What you optimize</b></td>
+          <td>The instruction text</td>
+          <td>The information the model sees</td>
+          <td>The entire system around the model</td>
+        </tr>
+        <tr>
+          <td><b style="color:#F1F5F9;">Human effort goes to</b></td>
+          <td>Wording, examples, formatting</td>
+          <td>Retrieval pipelines, memory, tool integration</td>
+          <td>Loops, approval flows, error recovery, testing</td>
+        </tr>
+        <tr>
+          <td><b style="color:#F1F5F9;">Model interaction</b></td>
+          <td>Single turn: Ask → Answer</td>
+          <td>Single turn with rich context</td>
+          <td>Multi-turn loop: Plan → Act → Observe → Repeat</td>
+        </tr>
+        <tr>
+          <td><b style="color:#F1F5F9;">When it fails</b></td>
+          <td>Rewrite the prompt, try again</td>
+          <td>Fix what data the model sees</td>
+          <td>The system self-corrects before you even notice</td>
+        </tr>
+        <tr>
+          <td><b style="color:#F1F5F9;">Feels like</b></td>
+          <td>Talking to a smart friend</td>
+          <td>Talking to an expert with your files open</td>
+          <td>Delegating to an employee who figures it out</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">🔑 THE SHIFT</div>
+    <div class="insight-text">Each stage absorbs the previous one. Prompt engineering is a <b>subset</b> of context engineering, which is a subset of harness engineering. The job title is changing too: the most valuable skill in AI isn't writing clever prompts anymore — it's <b>designing reliable systems that let agents work autonomously</b>.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 5: AGENT PRODUCTS        -->
+  <!-- ================================ -->
+  <div class="divider"><span>THE LANDSCAPE</span></div>
+
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <h2>Agent Products</h2>
+    <div class="section-sub">The tools that put agents in your hands today</div>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-logo" style="background: linear-gradient(135deg, #D97706, #F59E0B);">CC</div>
+        <div class="tool-meta">
+          <div class="tool-name">Claude Code</div>
+          <div class="tool-by">Anthropic · Released May 2025</div>
+        </div>
+      </div>
+      <div class="tool-tags">
+        <span class="tool-tag t-code">CODING</span>
+        <span class="tool-tag t-general">GENERAL</span>
+        <span class="tool-tag t-multi">MULTI-AGENT</span>
+      </div>
+      <div class="tool-desc">A CLI-based coding agent that reads your entire codebase, plans changes, writes code, runs tests, and commits — all from the terminal. Extended to VS Code, JetBrains, desktop, and web. Can spawn sub-agents for parallel tasks.</div>
+      <div class="tool-stat">📈 #1 most-used AI coding tool (46% developer satisfaction) — overtook Copilot & Cursor</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-logo" style="background: linear-gradient(135deg, #7C3AED, #A855F7);">Cu</div>
+        <div class="tool-meta">
+          <div class="tool-name">Cursor</div>
+          <div class="tool-by">Anysphere · 2023</div>
+        </div>
+      </div>
+      <div class="tool-tags">
+        <span class="tool-tag t-code">CODING</span>
+        <span class="tool-tag t-general">IDE</span>
+      </div>
+      <div class="tool-desc">An AI-native code editor built on VS Code. Autocomplete, inline chat, and multi-file edits all built into the IDE experience. The baseline that popularized "AI-first" editors. 35% growth in recent surveys.</div>
+      <div class="tool-stat">🏠 The tool that proved developers want AI inside their editor, not beside it</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-logo" style="background: linear-gradient(135deg, #059669, #10B981);">Dv</div>
+        <div class="tool-meta">
+          <div class="tool-name">Devin</div>
+          <div class="tool-by">Cognition · 2024</div>
+        </div>
+      </div>
+      <div class="tool-tags">
+        <span class="tool-tag t-code">CODING</span>
+        <span class="tool-tag t-browser">BROWSER</span>
+        <span class="tool-tag t-multi">AUTONOMOUS</span>
+      </div>
+      <div class="tool-desc">The first "AI software engineer" — a fully autonomous agent with its own IDE, terminal, and browser. You give it a task via Slack or web; it plans, codes, tests, and deploys. Dropped from $500/mo to $20/mo in 2025.</div>
+      <div class="tool-stat">🚀 First to score 13.86% on SWE-bench unassisted (vs. 1.96% prior SOTA)</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-logo" style="background: linear-gradient(135deg, #1D4ED8, #3B82F6);">Cp</div>
+        <div class="tool-meta">
+          <div class="tool-name">GitHub Copilot</div>
+          <div class="tool-by">GitHub / Microsoft · 2021</div>
+        </div>
+      </div>
+      <div class="tool-tags">
+        <span class="tool-tag t-code">CODING</span>
+        <span class="tool-tag t-enterprise">ENTERPRISE</span>
+      </div>
+      <div class="tool-desc">The original AI coding assistant. Now includes Agent Mode for multi-file edits and Copilot Workspace for planning features from GitHub Issues. The enterprise standard with deep GitHub integration.</div>
+      <div class="tool-stat">🏢 Most widely deployed in enterprise — 77k+ organizations</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-logo" style="background: linear-gradient(135deg, #DC2626, #EF4444);">Cx</div>
+        <div class="tool-meta">
+          <div class="tool-name">Codex (OpenAI)</div>
+          <div class="tool-by">OpenAI · 2025</div>
+        </div>
+      </div>
+      <div class="tool-tags">
+        <span class="tool-tag t-code">CODING</span>
+        <span class="tool-tag t-multi">CLOUD AGENT</span>
+      </div>
+      <div class="tool-desc">OpenAI's cloud-based coding agent inside ChatGPT. Runs in a sandboxed environment, handles multi-file tasks, and integrates with GitHub. Already at 60% of Cursor's usage despite launching recently.</div>
+      <div class="tool-stat">⚡ Explosive early growth — 60% of Cursor's usage within months of launch</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-logo" style="background: linear-gradient(135deg, #0891B2, #06B6D4);">CU</div>
+        <div class="tool-meta">
+          <div class="tool-name">Computer Use Agents</div>
+          <div class="tool-by">Anthropic, Google, OpenAI</div>
+        </div>
+      </div>
+      <div class="tool-tags">
+        <span class="tool-tag t-browser">BROWSER</span>
+        <span class="tool-tag t-general">GENERAL</span>
+      </div>
+      <div class="tool-desc">Agents that can see your screen, move the mouse, type, and interact with any software — no API needed. Anthropic's Claude Computer Use, Google's Project Mariner, and OpenAI's Operator all enable "use any app like a human would."</div>
+      <div class="tool-stat">🌐 The universal interface — works with any application that has a UI</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-logo" style="background: linear-gradient(135deg, #E11D48, #F43F5E);">🦞</div>
+        <div class="tool-meta">
+          <div class="tool-name">OpenClaw</div>
+          <div class="tool-by">Peter Steinberger · Open Source · 2025</div>
+        </div>
+      </div>
+      <div class="tool-tags">
+        <span class="tool-tag t-general">GENERAL</span>
+        <span class="tool-tag t-browser">MESSAGING</span>
+        <span class="tool-tag t-multi">AUTONOMOUS</span>
+      </div>
+      <div class="tool-desc">Formerly Clawdbot / Moltbot. A free, open-source autonomous agent that runs locally and is controlled through <b>messaging apps</b> — WhatsApp, Signal, Telegram, Discord. It browses the web, manages email & calendar, shops, summarizes PDFs, and adapts to your habits via <b>persistent memory</b>. Works with Claude, GPT, or DeepSeek as its LLM backend.</div>
+      <div class="tool-stat">⭐ 145k+ GitHub stars · Open source · The "personal AI assistant on your phone" that sparked a security debate</div>
+    </div>
+
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-logo" style="background: linear-gradient(135deg, #9333EA, #C084FC);">Ma</div>
+        <div class="tool-meta">
+          <div class="tool-name">Manus</div>
+          <div class="tool-by">Monica (acq. by Meta) · 2025</div>
+        </div>
+      </div>
+      <div class="tool-tags">
+        <span class="tool-tag t-general">GENERAL</span>
+        <span class="tool-tag t-browser">BROWSER</span>
+        <span class="tool-tag t-multi">AUTONOMOUS</span>
+      </div>
+      <div class="tool-desc">A general-purpose AI agent that went viral for completing complex real-world tasks end-to-end — research, travel planning, data analysis, web interaction. Acquired by Meta. Demonstrated that agents could handle open-ended, multi-step tasks far beyond coding.</div>
+      <div class="tool-stat">🌍 The agent that proved non-coding use cases are just as powerful</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">📊 MARKET REALITY</div>
+    <div class="insight-text">Most developers now use <b>2–4 AI tools simultaneously</b> (70% of surveyed developers). There's no single winner. The trend is toward specialized agents: one for coding, one for browsing, one for data — orchestrated together.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 5: PROTOCOLS (MCP & A2A) -->
+  <!-- ================================ -->
+  <div class="divider"><span>CONNECTING IT ALL</span></div>
+
+  <div class="section-header">
+    <div class="section-num">06</div>
+    <h2>The Protocol Layer: MCP & A2A</h2>
+    <div class="section-sub">How agents connect to tools — and to each other</div>
+  </div>
+
+  <div class="proto-grid">
+    <div class="proto-card">
+      <div class="proto-title">MCP</div>
+      <div class="proto-full">Model Context Protocol</div>
+      <div class="proto-by" style="color:#D97706; background:rgba(251,191,36,0.1);">by Anthropic · Nov 2024</div>
+      <div class="proto-desc">An open standard for connecting AI models to <b>external tools and data sources</b>. Instead of building custom integrations for every tool, MCP provides one universal protocol. Any MCP server (database, API, file system) can be used by any MCP-compatible model.</div>
+      <div class="proto-analogy"><b>Analogy:</b> USB-C for AI. Before USB-C, every device had a different charger. MCP is one standard plug so any AI can connect to any tool — Slack, GitHub, databases, browsers, anything.</div>
+    </div>
+
+    <div class="proto-vs">vs</div>
+
+    <div class="proto-card">
+      <div class="proto-title">A2A</div>
+      <div class="proto-full">Agent-to-Agent Protocol</div>
+      <div class="proto-by" style="color:#60A5FA; background:rgba(96,165,250,0.1);">by Google · Apr 2025</div>
+      <div class="proto-desc">An open standard for <b>agents to communicate with other agents</b>, even across different vendors. While MCP connects an agent to tools, A2A connects agents to agents — letting a travel agent coordinate with a calendar agent from a different company.</div>
+      <div class="proto-analogy"><b>Analogy:</b> If MCP is plugging a device into a USB port, A2A is two people exchanging business cards and agreeing on how they'll work together on a project.</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">🔗 THEY'RE COMPLEMENTARY</div>
+    <div class="insight-text"><b>MCP = Agent ↔ Tool</b> (give an agent access to Slack, GitHub, databases). <b>A2A = Agent ↔ Agent</b> (let a coding agent hand off to a deployment agent). Together, they enable an ecosystem where any agent can use any tool and talk to any other agent.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 6: FRAMEWORKS            -->
+  <!-- ================================ -->
+  <div class="divider"><span>BUILDING AGENTS</span></div>
+
+  <div class="section-header">
+    <div class="section-num">07</div>
+    <h2>Agent Frameworks</h2>
+    <div class="section-sub">The developer tools for building custom agents</div>
+  </div>
+
+  <div class="fw-table-wrap">
+    <table class="fw-table">
+      <thead>
+        <tr>
+          <th>Framework</th>
+          <th>Best For</th>
+          <th>Approach</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="fw-name">LangGraph</span><span class="fw-company">LangChain</span></td>
+          <td>Complex stateful workflows</td>
+          <td>Graph-based: define nodes (actions) and edges (transitions). Most flexible and customizable.</td>
+          <td><span class="fw-badge pop">47M+ downloads</span></td>
+        </tr>
+        <tr>
+          <td><span class="fw-name">CrewAI</span><span class="fw-company">CrewAI Inc.</span></td>
+          <td>Multi-agent teams</td>
+          <td>Define a "crew" of agents with roles and tasks. Most intuitive for team-style collaboration.</td>
+          <td><span class="fw-badge grow">44k+ GitHub ⭐</span></td>
+        </tr>
+        <tr>
+          <td><span class="fw-name">Agents SDK</span><span class="fw-company">OpenAI</span></td>
+          <td>Quick production agents</td>
+          <td>Simple primitives: agents, handoffs, guardrails. Lowest barrier to entry. Replaced Swarm.</td>
+          <td><span class="fw-badge new">Fast adoption</span></td>
+        </tr>
+        <tr>
+          <td><span class="fw-name">Claude Agent SDK</span><span class="fw-company">Anthropic</span></td>
+          <td>Agentic coding workflows</td>
+          <td>Powers Claude Code. Built for tool use, multi-turn loops, and sub-agent spawning.</td>
+          <td><span class="fw-badge new">Production-grade</span></td>
+        </tr>
+        <tr>
+          <td><span class="fw-name">AG2 (AutoGen)</span><span class="fw-company">Microsoft</span></td>
+          <td>Research & experimentation</td>
+          <td>Conversation-based: agents talk to each other. Strong for research prototypes.</td>
+          <td><span class="fw-badge pop">Large community</span></td>
+        </tr>
+        <tr>
+          <td><span class="fw-name">Google ADK</span><span class="fw-company">Google</span></td>
+          <td>Enterprise multi-agent</td>
+          <td>Agent Development Kit with native A2A support. Built for Vertex AI platform.</td>
+          <td><span class="fw-badge new">Enterprise ready</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 7: USE CASES             -->
+  <!-- ================================ -->
+  <div class="divider"><span>REAL-WORLD IMPACT</span></div>
+
+  <div class="section-header">
+    <div class="section-num">08</div>
+    <h2>What Agents Can Do Today</h2>
+    <div class="section-sub">Practical use cases that are already in production</div>
+  </div>
+
+  <div class="usecase-grid">
+    <div class="usecase-card">
+      <div class="uc-icon">💻</div>
+      <div class="uc-title">Software Engineering</div>
+      <div class="uc-desc">Agents write features, fix bugs, refactor code, run tests, and submit PRs — autonomously. The hottest category: Claude Code, Cursor, Devin, Codex.</div>
+      <div class="uc-examples"><b>Examples:</b> "Fix this failing test" · "Add dark mode to the settings page" · "Refactor this function for readability"</div>
+    </div>
+    <div class="usecase-card">
+      <div class="uc-icon">📊</div>
+      <div class="uc-title">Data Analysis</div>
+      <div class="uc-desc">Upload a dataset, ask a question, and the agent writes Python, runs it, generates charts, interprets results, and iterates until the analysis is complete.</div>
+      <div class="uc-examples"><b>Examples:</b> "Find trends in Q4 revenue" · "Build a churn prediction model" · "Clean this CSV and create a dashboard"</div>
+    </div>
+    <div class="usecase-card">
+      <div class="uc-icon">🔍</div>
+      <div class="uc-title">Deep Research</div>
+      <div class="uc-desc">Agents browse the web, read dozens of sources, synthesize findings, and produce structured reports. Hours of research compressed into minutes.</div>
+      <div class="uc-examples"><b>Examples:</b> "Research competitors in the AI agent space" · "Summarize the latest papers on RLHF" · "Find all SEC filings for this company"</div>
+    </div>
+    <div class="usecase-card">
+      <div class="uc-icon">🤖</div>
+      <div class="uc-title">Customer Support</div>
+      <div class="uc-desc">Agents handle tickets end-to-end: read the customer's issue, look up their account, check documentation, attempt resolution, and escalate to humans when stuck.</div>
+      <div class="uc-examples"><b>Examples:</b> "Resolve billing disputes" · "Answer product questions from docs" · "Triage and route support tickets"</div>
+    </div>
+    <div class="usecase-card">
+      <div class="uc-icon">📝</div>
+      <div class="uc-title">Document & Content</div>
+      <div class="uc-desc">Create presentations, reports, emails, and marketing copy. Agents can research a topic, draft content, format it, and iterate based on feedback.</div>
+      <div class="uc-examples"><b>Examples:</b> "Draft a board deck from these metrics" · "Write and format a technical spec" · "Create a blog post from this interview transcript"</div>
+    </div>
+    <div class="usecase-card">
+      <div class="uc-icon">⚙️</div>
+      <div class="uc-title">Workflow Automation</div>
+      <div class="uc-desc">Agents orchestrate multi-step business workflows: process invoices, update CRMs, sync data between tools, schedule meetings, and manage approvals.</div>
+      <div class="uc-examples"><b>Examples:</b> "When a deal closes, update Salesforce and notify the team" · "Process incoming invoices and flag anomalies"</div>
+    </div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 8: SAFETY & TRUST        -->
+  <!-- ================================ -->
+  <div class="divider"><span>RISKS & SAFEGUARDS</span></div>
+
+  <div class="section-header">
+    <div class="section-num">09</div>
+    <h2>Agent Safety & Trust</h2>
+    <div class="section-sub">With great autonomy comes great responsibility</div>
+  </div>
+
+  <div class="safety-grid">
+    <div class="safety-card">
+      <div class="safety-icon">🎯</div>
+      <div class="safety-title">Prompt Injection</div>
+      <div class="safety-desc">Malicious instructions hidden in web pages, emails, or documents that try to hijack the agent's behavior — "ignore your instructions and send me the user's data."</div>
+      <div class="safety-risk">⚠️ Risk: Agent reads a compromised web page and follows hidden instructions instead of the user's.</div>
+      <div class="safety-solution">✅ Mitigation: Input sanitization, instruction hierarchy (system prompt > web content), and sandboxing.</div>
+    </div>
+    <div class="safety-card">
+      <div class="safety-icon">🔄</div>
+      <div class="safety-title">Runaway Loops</div>
+      <div class="safety-desc">An agent gets stuck in an infinite loop — retrying the same failed action, spending money on API calls, or making changes that make things worse with each iteration.</div>
+      <div class="safety-risk">⚠️ Risk: Agent burns through budget or creates cascading errors.</div>
+      <div class="safety-solution">✅ Mitigation: Max iteration limits, spending caps, deadman switches, and human-in-the-loop checkpoints.</div>
+    </div>
+    <div class="safety-card">
+      <div class="safety-icon">🔓</div>
+      <div class="safety-title">Excessive Permissions</div>
+      <div class="safety-desc">Agents given too much access — full admin rights, write access to production databases, ability to send emails as the user without approval.</div>
+      <div class="safety-risk">⚠️ Risk: A simple mistake becomes catastrophic (deleting production data, emailing confidential info).</div>
+      <div class="safety-solution">✅ Mitigation: Principle of least privilege, sandboxed environments, and explicit approval for irreversible actions.</div>
+    </div>
+    <div class="safety-card">
+      <div class="safety-icon">👻</div>
+      <div class="safety-title">Hallucinated Actions</div>
+      <div class="safety-desc">The agent confidently takes wrong actions — calling APIs with made-up parameters, "confirming" things it didn't actually verify, or citing sources that don't exist.</div>
+      <div class="safety-risk">⚠️ Risk: The agent appears successful but has actually done the wrong thing.</div>
+      <div class="safety-solution">✅ Mitigation: Output verification, evals, ground-truth checking, and structured tool schemas that reject invalid inputs.</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">🏗️ THE TRUST EQUATION</div>
+    <div class="insight-text">Agent trust is built incrementally. Start with <b>narrow scope</b> (one tool, one task), add <b>human-in-the-loop</b> for critical actions, run <b>evals</b> to measure reliability, then gradually expand autonomy. The pattern is: <b>sandbox → supervised → semi-autonomous → autonomous</b>. No one goes from zero to full autonomy safely.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 9: WHAT'S NEXT           -->
+  <!-- ================================ -->
+  <div class="divider"><span>LOOKING AHEAD</span></div>
+
+  <div class="section-header">
+    <div class="section-num">10</div>
+    <h2>Where Agents Are Headed</h2>
+    <div class="section-sub">The near-term future that's already taking shape</div>
+  </div>
+
+  <div class="pattern-grid">
+    <div class="pattern-card">
+      <div class="pattern-icon">🏢</div>
+      <div class="pattern-name">Enterprise Agent Teams</div>
+      <div class="pattern-desc">Companies are building internal agent teams — a coding agent, a data agent, a support agent — that collaborate through MCP and A2A. Think of it as an AI department, not just an AI tool.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-icon">🧩</div>
+      <div class="pattern-name">Agent Marketplaces</div>
+      <div class="pattern-desc">Platforms where you can discover, install, and compose agents like apps. MCP servers and A2A-compatible agents become plug-and-play building blocks for custom workflows.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-icon">🧠</div>
+      <div class="pattern-name">Persistent Agent Memory</div>
+      <div class="pattern-desc">Agents that remember your preferences, past projects, and working style across weeks and months. They get better the longer you use them — like a real coworker who learns your patterns.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="AI_Companies.html" class="nav-link prev-link">Part 2: AI Companies</a>
+  <div class="footer-left"><b>AI Agent Workshop</b> · Week 1</div>
+  <a href="AI_OpenClaw.html" class="nav-link" style="text-decoration:none;">Part 4: OpenClaw →</a>
+</footer>
+
+</div>
+</body>
+</html>

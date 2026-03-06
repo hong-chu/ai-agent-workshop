@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Part 4: OpenClaw — AI Agent Workshop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0B1120;
+    color: #E2E8F0;
+  }
+
+  /* === BACKGROUND PATTERN === */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === NAV BAR === */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(11,17,32,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 40px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav .brand {
+    font-size: 15px; font-weight: 700; color: #F8FAFC;
+    letter-spacing: -0.3px;
+  }
+  nav .brand span { color: #60A5FA; }
+  nav .links { display: flex; gap: 6px; }
+  nav .links a {
+    font-size: 13px; font-weight: 500; color: #64748B;
+    text-decoration: none; padding: 6px 14px; border-radius: 8px;
+    transition: all 0.2s;
+  }
+  nav .links a:hover { color: #CBD5E1; background: rgba(255,255,255,0.05); }
+  nav .links a.active {
+    color: #F1F5F9; background: rgba(255,255,255,0.08);
+    font-weight: 600;
+  }
+
+  /* === MAIN CONTENT === */
+  .page {
+    max-width: 1200px; margin: 0 auto;
+    padding: 100px 30px 60px;
+    position: relative; z-index: 1;
+  }
+
+  /* === PAGE HEADER === */
+  .part-label {
+    text-align: center; font-size: 12px; font-weight: 700;
+    letter-spacing: 2.5px; color: #F43F5E;
+    margin-bottom: 12px;
+    animation: fadeInDown 0.6s ease both;
+  }
+  h1 {
+    font-size: 48px; font-weight: 800; text-align: center;
+    color: #F8FAFC; margin-bottom: 8px; letter-spacing: -1px;
+    animation: fadeInDown 0.6s ease 0.1s both;
+  }
+  h1 .lobster { font-size: 44px; vertical-align: middle; margin-right: 8px; }
+  .sub {
+    text-align: center; font-size: 18px; color: #64748B;
+    margin-bottom: 14px;
+    animation: fadeInDown 0.6s ease 0.15s both;
+  }
+  .intro {
+    text-align: center; font-size: 16px; color: #94A3B8;
+    max-width: 760px; margin: 0 auto 56px; line-height: 1.7;
+    animation: fadeInDown 0.6s ease 0.2s both;
+  }
+
+  /* === SECTION HEADERS === */
+  .section-header { margin-bottom: 32px; }
+  .section-header .section-num {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #475569; margin-bottom: 8px;
+  }
+  .section-header h2 {
+    font-size: 32px; font-weight: 800; color: #F1F5F9;
+    letter-spacing: -0.5px;
+  }
+  .section-header .section-sub {
+    font-size: 15px; color: #64748B; margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* === DIVIDER === */
+  .divider {
+    text-align: center;
+    margin: 72px 0 56px;
+    position: relative;
+  }
+  .divider::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  }
+  .divider span {
+    position: relative; z-index: 1;
+    background: #0B1120;
+    padding: 0 24px;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 2px; color: #475569;
+    text-transform: uppercase;
+  }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === HERO STATS === */
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.3s both;
+  }
+  .hero-stat {
+    padding: 24px 20px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    text-align: center;
+  }
+  .hero-stat .hs-value {
+    font-size: 28px; font-weight: 800; color: #F1F5F9;
+    margin-bottom: 4px;
+  }
+  .hero-stat .hs-label {
+    font-size: 12px; color: #64748B; font-weight: 500;
+  }
+
+  /* === TIMELINE / NAMING === */
+  .name-timeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.3s both;
+  }
+  .name-card {
+    flex: 1;
+    padding: 20px 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    text-align: center;
+  }
+  .name-card .nc-date {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    color: #64748B; margin-bottom: 6px;
+  }
+  .name-card .nc-name {
+    font-size: 18px; font-weight: 800; color: #F1F5F9;
+    margin-bottom: 4px;
+  }
+  .name-card .nc-reason {
+    font-size: 12px; color: #94A3B8; line-height: 1.5;
+  }
+  .name-arrow {
+    font-size: 20px; color: #475569;
+    padding: 0 12px; flex-shrink: 0;
+  }
+
+  /* === ARCHITECTURE === */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .arch-card {
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+  }
+  .arch-icon { font-size: 28px; margin-bottom: 12px; }
+  .arch-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .arch-title {
+    font-size: 17px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 6px;
+  }
+  .arch-desc {
+    font-size: 13.5px; color: #94A3B8; line-height: 1.65;
+  }
+
+  /* === SVG CHART === */
+  .chart-wrap {
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    padding: 28px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .chart-title {
+    font-size: 16px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 4px;
+  }
+  .chart-sub {
+    font-size: 12px; color: #64748B; margin-bottom: 20px;
+  }
+  .chart-legend {
+    display: flex; gap: 20px; margin-top: 16px; flex-wrap: wrap;
+  }
+  .chart-legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #94A3B8;
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 3px;
+  }
+
+  /* === FLOW DIAGRAM === */
+  .flow-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 28px;
+    border-radius: 16px;
+    border: 1px solid rgba(244,63,94,0.15);
+    background: rgba(244,63,94,0.03);
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+    flex-wrap: wrap;
+  }
+  .flow-box {
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 13px; font-weight: 600;
+    text-align: center;
+  }
+  .flow-arrow {
+    font-size: 18px; color: #475569;
+  }
+
+  /* === SECURITY GRID === */
+  .sec-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .sec-card {
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+  }
+  .sec-icon { font-size: 24px; margin-bottom: 10px; }
+  .sec-title {
+    font-size: 16px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 6px;
+  }
+  .sec-desc {
+    font-size: 13.5px; color: #94A3B8; line-height: 1.65;
+  }
+  .sec-risk {
+    margin-top: 10px;
+    font-size: 12px; color: #F87171;
+    padding: 8px 12px; border-radius: 8px;
+    background: rgba(248,113,113,0.06);
+    border-left: 3px solid rgba(248,113,113,0.3);
+  }
+
+  /* === WHY IT MATTERS === */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .why-card {
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.3s;
+  }
+  .why-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .why-icon { font-size: 28px; margin-bottom: 12px; }
+  .why-title {
+    font-size: 17px; font-weight: 700; color: #F1F5F9;
+    margin-bottom: 8px;
+  }
+  .why-desc {
+    font-size: 13.5px; color: #94A3B8; line-height: 1.65;
+  }
+
+  /* === COMPARISON TABLE === */
+  .cmp-table-wrap {
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .cmp-table th {
+    background: rgba(255,255,255,0.04);
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.5px; color: #94A3B8;
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .cmp-table td {
+    font-size: 13.5px; color: #CBD5E1;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .cmp-table tr:last-child td { border-bottom: none; }
+  .cmp-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* === INSIGHT CALLOUT === */
+  .insight {
+    padding: 24px 28px;
+    border-radius: 16px;
+    border: 1px solid rgba(251,191,36,0.15);
+    background: rgba(251,191,36,0.04);
+    margin: 32px 0 48px;
+    animation: fadeInUp 0.5s ease 0.35s both;
+  }
+  .insight-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #FBBF24; margin-bottom: 8px;
+  }
+  .insight-text {
+    font-size: 15px; color: #CBD5E1; line-height: 1.7;
+  }
+  .insight-text b { color: #F1F5F9; }
+
+  /* === FOOTER === */
+  footer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 30px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    position: relative; z-index: 1;
+  }
+  footer .footer-left {
+    font-size: 13px; color: #475569;
+  }
+  .nav-link {
+    font-size: 14px; font-weight: 600;
+    color: #60A5FA; text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-link:hover { color: #93C5FD; }
+  .prev-link::before { content: '← '; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">AI Agent <span>Workshop</span></div>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="AI_Vocabulary.html">Part 0: Vocabulary</a>
+    <a href="AI_Timeline.html">Part 1: AI Evolution</a>
+    <a href="AI_Companies.html">Part 2: Companies</a>
+    <a href="AI_Agents.html">Part 3: Agents</a>
+    <a href="AI_OpenClaw.html" class="active">Part 4: OpenClaw</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="part-label">PART 4 · CASE STUDY</div>
+  <h1><span class="lobster">🦞</span> OpenClaw</h1>
+  <p class="sub">The open-source AI agent that broke GitHub records — and scared security teams</p>
+  <p class="intro">In November 2025, an Austrian developer published a personal AI assistant on GitHub. Four months later, it surpassed React to become the <b>most-starred software project on GitHub</b> — and triggered a global debate about what happens when AI agents get full access to your computer.</p>
+
+  <!-- ================================ -->
+  <!-- SECTION 1: THE NUMBERS           -->
+  <!-- ================================ -->
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <h2>By the Numbers</h2>
+    <div class="section-sub">From zero to #1 on GitHub in under 4 months</div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hs-value">250K+</div>
+      <div class="hs-label">GitHub Stars</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hs-value">60 days</div>
+      <div class="hs-label">Zero → #1 Software Repo</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hs-value">34K</div>
+      <div class="hs-label">Stars in 48 Hours (Peak)</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hs-value">30K+</div>
+      <div class="hs-label">Exposed Instances Found</div>
+    </div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 2: THE NAME STORY        -->
+  <!-- ================================ -->
+  <div class="divider"><span>THE ORIGIN STORY</span></div>
+
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <h2>Three Names, One Lobster</h2>
+    <div class="section-sub">A trademark dispute, a viral social network, and the fastest-growing repo in history</div>
+  </div>
+
+  <div class="name-timeline">
+    <div class="name-card">
+      <div class="nc-date">NOV 2025</div>
+      <div class="nc-name">🦞 Clawdbot</div>
+      <div class="nc-reason">Original name. A play on "Claude" + claw. Built by Peter Steinberger as a personal AI assistant. Quiet launch, small community.</div>
+    </div>
+    <div class="name-arrow">→</div>
+    <div class="name-card">
+      <div class="nc-date">JAN 27, 2026</div>
+      <div class="nc-name">🦞 Moltbot</div>
+      <div class="nc-reason">Anthropic's lawyers flagged "Clawdbot" (too close to "Claude"). Renamed to "Moltbot" — lobsters molt to grow. The creator said the name "never grew on him."</div>
+    </div>
+    <div class="name-arrow">→</div>
+    <div class="name-card">
+      <div class="nc-date">JAN 30, 2026</div>
+      <div class="nc-name">🦞 OpenClaw</div>
+      <div class="nc-reason">Final rebrand. Same day: crossed 100K stars. Then Moltbook (a social network for AI agents) went viral, driving another wave of attention. Hit 250K by March.</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">🦞 WHAT IS MOLTBOOK?</div>
+    <div class="insight-text">On January 28, entrepreneur Matt Schlicht launched <b>Moltbook</b> — a social network designed exclusively for AI agents. Users connect their OpenClaw bots, which then interact with each other, sharing recommendations and completing tasks collaboratively. The viral buzz from Moltbook drove a massive wave of interest in OpenClaw itself.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 3: STAR HISTORY CHART    -->
+  <!-- ================================ -->
+  <div class="divider"><span>THE CHART</span></div>
+
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <h2>GitHub Star History</h2>
+    <div class="section-sub">OpenClaw vs. the most popular open-source projects of all time</div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Cumulative GitHub Stars Over Time</div>
+    <div class="chart-sub">Months since first commit (normalized for comparison)</div>
+
+    <svg viewBox="0 0 1100 400" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">
+      <!-- Grid -->
+      <defs>
+        <pattern id="grid" width="100" height="80" patternUnits="userSpaceOnUse">
+          <path d="M 100 0 L 0 0 0 80" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect x="60" y="20" width="1020" height="340" fill="url(#grid)"/>
+
+      <!-- Y-axis labels -->
+      <text x="52" y="28" fill="#475569" font-size="10" text-anchor="end" font-family="Inter">250K</text>
+      <text x="52" y="96" fill="#475569" font-size="10" text-anchor="end" font-family="Inter">200K</text>
+      <text x="52" y="164" fill="#475569" font-size="10" text-anchor="end" font-family="Inter">150K</text>
+      <text x="52" y="232" fill="#475569" font-size="10" text-anchor="end" font-family="Inter">100K</text>
+      <text x="52" y="300" fill="#475569" font-size="10" text-anchor="end" font-family="Inter">50K</text>
+      <text x="52" y="358" fill="#475569" font-size="10" text-anchor="end" font-family="Inter">0</text>
+
+      <!-- X-axis labels (months) — spread across wider chart -->
+      <text x="60" y="378" fill="#475569" font-size="10" font-family="Inter">0</text>
+      <text x="220" y="378" fill="#475569" font-size="10" font-family="Inter">12 mo</text>
+      <text x="380" y="378" fill="#475569" font-size="10" font-family="Inter">24 mo</text>
+      <text x="540" y="378" fill="#475569" font-size="10" font-family="Inter">36 mo</text>
+      <text x="700" y="378" fill="#475569" font-size="10" font-family="Inter">48 mo</text>
+      <text x="860" y="378" fill="#475569" font-size="10" font-family="Inter">60 mo</text>
+      <text x="1070" y="378" fill="#475569" font-size="10" text-anchor="end" font-family="Inter">72+ mo</text>
+
+      <!-- React line (10+ years to ~230K) — steady climb -->
+      <polyline points="60,355 140,348 220,338 300,322 380,304 460,282 540,262 620,242 700,222 780,198 860,170 940,142 1080,110"
+        fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+
+      <!-- TensorFlow line (~8 years to ~190K) — steady -->
+      <polyline points="60,355 140,340 220,318 300,298 380,276 460,256 540,240 620,228 700,218 780,206 860,192 940,178 1080,162"
+        fill="none" stroke="#A855F7" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+
+      <!-- Vue line (~9 years to ~210K) -->
+      <polyline points="60,355 140,342 220,326 300,306 380,282 460,260 540,242 620,222 700,206 780,186 860,168 940,150 1080,136"
+        fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+
+      <!-- Kubernetes line (~10 years to ~115K) — slower -->
+      <polyline points="60,355 140,348 220,338 300,326 380,312 460,296 540,280 620,268 700,256 780,246 860,238 940,228 1080,218"
+        fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+
+      <!-- OpenClaw line — ROCKET (4 months to 250K) -->
+      <polyline points="60,355 80,340 100,310 120,258 140,190 160,120 180,75 195,38"
+        fill="none" stroke="#F43F5E" stroke-width="3.5" stroke-linecap="round"/>
+
+      <!-- Glow effect for OpenClaw -->
+      <polyline points="60,355 80,340 100,310 120,258 140,190 160,120 180,75 195,38"
+        fill="none" stroke="#F43F5E" stroke-width="8" stroke-linecap="round" opacity="0.15"/>
+
+      <!-- Data point labels -->
+      <circle cx="195" cy="38" r="5" fill="#F43F5E"/>
+      <text x="208" y="34" fill="#F43F5E" font-size="11" font-weight="700" font-family="Inter">OpenClaw 250K</text>
+      <text x="208" y="48" fill="#F87171" font-size="9" font-family="Inter">~4 months</text>
+
+      <text x="1075" y="105" fill="#3B82F6" font-size="10" font-weight="600" text-anchor="end" font-family="Inter">React 230K</text>
+      <text x="1075" y="131" fill="#34D399" font-size="10" font-weight="600" text-anchor="end" font-family="Inter">Vue 210K</text>
+      <text x="1075" y="157" fill="#A855F7" font-size="10" font-weight="600" text-anchor="end" font-family="Inter">TensorFlow 190K</text>
+      <text x="1075" y="213" fill="#FBBF24" font-size="10" font-weight="600" text-anchor="end" font-family="Inter">Kubernetes 115K</text>
+
+      <!-- Annotation: "18x faster than Kubernetes" -->
+      <rect x="230" y="64" width="186" height="30" rx="8" fill="rgba(244,63,94,0.1)" stroke="rgba(244,63,94,0.2)" stroke-width="1"/>
+      <text x="323" y="83" fill="#F43F5E" font-size="10" font-weight="700" text-anchor="middle" font-family="Inter">18x faster than Kubernetes</text>
+    </svg>
+
+    <div class="chart-legend">
+      <div class="chart-legend-item">
+        <div class="legend-dot" style="background:#F43F5E;"></div>
+        OpenClaw (4 months)
+      </div>
+      <div class="chart-legend-item">
+        <div class="legend-dot" style="background:#3B82F6;"></div>
+        React (10+ years)
+      </div>
+      <div class="chart-legend-item">
+        <div class="legend-dot" style="background:#34D399;"></div>
+        Vue.js (9+ years)
+      </div>
+      <div class="chart-legend-item">
+        <div class="legend-dot" style="background:#A855F7;"></div>
+        TensorFlow (8+ years)
+      </div>
+      <div class="chart-legend-item">
+        <div class="legend-dot" style="background:#FBBF24;"></div>
+        Kubernetes (10+ years)
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 4: HOW IT WORKS          -->
+  <!-- ================================ -->
+  <div class="divider"><span>UNDER THE HOOD</span></div>
+
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <h2>How OpenClaw Works</h2>
+    <div class="section-sub">Follow one message from your phone through the entire system</div>
+  </div>
+
+  <p style="font-size:16px; color:#94A3B8; line-height:1.8; margin-bottom:36px; max-width:900px;">Imagine you text your OpenClaw agent on Discord: <b style="color:#F1F5F9;">"Do I have any meetings tomorrow? If yes, prep a 1-page summary of each topic."</b> Here's exactly what happens behind the scenes — step by step.</p>
+
+  <!-- Step-by-step walkthrough -->
+  <div style="display:flex; flex-direction:column; gap:0; margin-bottom:48px; position:relative;">
+
+    <!-- Vertical line connecting steps -->
+    <div style="position:absolute; left:27px; top:28px; bottom:28px; width:2px; background:linear-gradient(to bottom, #F43F5E, #A855F7, #FBBF24, #34D399, #60A5FA, #F43F5E); opacity:0.3;"></div>
+
+    <!-- Step 1 -->
+    <div style="display:flex; gap:20px; align-items:flex-start; padding:20px 0;">
+      <div style="flex-shrink:0; width:56px; height:56px; border-radius:50%; background:rgba(244,63,94,0.12); border:2px solid rgba(244,63,94,0.3); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; color:#F43F5E; position:relative; z-index:1;">1</div>
+      <div style="flex:1; padding:20px 24px; border-radius:16px; border:1px solid rgba(244,63,94,0.15); background:rgba(244,63,94,0.03);">
+        <div style="font-size:11px; font-weight:700; letter-spacing:1.5px; color:#F43F5E; margin-bottom:6px;">YOUR MESSAGE ARRIVES</div>
+        <div style="font-size:17px; font-weight:700; color:#F1F5F9; margin-bottom:8px;">The Gateway catches it</div>
+        <div style="font-size:14px; color:#94A3B8; line-height:1.7;">Your Discord message hits the <b style="color:#F1F5F9;">Gateway</b> — a lightweight server running on your computer. It speaks WhatsApp, Signal, Telegram, and Discord. The Gateway strips away platform-specific formatting and turns your message into a clean text the agent can understand. <span style="color:#64748B;">Think of it like a receptionist who answers every phone line.</span></div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div style="display:flex; gap:20px; align-items:flex-start; padding:20px 0;">
+      <div style="flex-shrink:0; width:56px; height:56px; border-radius:50%; background:rgba(168,85,247,0.12); border:2px solid rgba(168,85,247,0.3); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; color:#A855F7; position:relative; z-index:1;">2</div>
+      <div style="flex:1; padding:20px 24px; border-radius:16px; border:1px solid rgba(168,85,247,0.15); background:rgba(168,85,247,0.03);">
+        <div style="font-size:11px; font-weight:700; letter-spacing:1.5px; color:#A855F7; margin-bottom:6px;">THE AGENT READS ITSELF INTO EXISTENCE</div>
+        <div style="font-size:17px; font-weight:700; color:#F1F5F9; margin-bottom:8px;">Loading the workspace files</div>
+        <div style="font-size:14px; color:#94A3B8; line-height:1.7;">Before thinking about your message, OpenClaw reads a folder of plain text files from your disk — its "DNA." These files tell the agent who it is, who you are, and what it should remember:</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px;">
+          <div style="padding:12px 16px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:13px; font-weight:700; color:#F43F5E; margin-bottom:2px;">SOUL.md</div>
+            <div style="font-size:12px; color:#94A3B8; line-height:1.5;">"Be concise. Never use jargon. Ask before doing anything irreversible." — the system prompt, but <b style="color:#CBD5E1;">you</b> wrote it.</div>
+          </div>
+          <div style="padding:12px 16px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:13px; font-weight:700; color:#60A5FA; margin-bottom:2px;">USER.md</div>
+            <div style="font-size:12px; color:#94A3B8; line-height:1.5;">"Name: Yeesun. Role: Engineer. Prefers Korean greetings." — how the agent personalizes every reply.</div>
+          </div>
+          <div style="padding:12px 16px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:13px; font-weight:700; color:#FBBF24; margin-bottom:2px;">memory/2026-03-06.md</div>
+            <div style="font-size:12px; color:#94A3B8; line-height:1.5;">Today's log + yesterday's. "Yeesun had a 1-on-1 with Lisa. Discussed Q2 roadmap." — short-term memory.</div>
+          </div>
+          <div style="padding:12px 16px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:13px; font-weight:700; color:#A855F7; margin-bottom:2px;">IDENTITY.md</div>
+            <div style="font-size:12px; color:#94A3B8; line-height:1.5;">The agent's name, emoji, personality. Created during initial "bootstrap ritual" setup.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div style="display:flex; gap:20px; align-items:flex-start; padding:20px 0;">
+      <div style="flex-shrink:0; width:56px; height:56px; border-radius:50%; background:rgba(251,191,36,0.12); border:2px solid rgba(251,191,36,0.3); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; color:#FBBF24; position:relative; z-index:1;">3</div>
+      <div style="flex:1; padding:20px 24px; border-radius:16px; border:1px solid rgba(251,191,36,0.15); background:rgba(251,191,36,0.03);">
+        <div style="font-size:11px; font-weight:700; letter-spacing:1.5px; color:#FBBF24; margin-bottom:6px;">THE PROMPT IS ASSEMBLED</div>
+        <div style="font-size:17px; font-weight:700; color:#F1F5F9; margin-bottom:8px;">Everything gets stitched into one giant prompt</div>
+        <div style="font-size:14px; color:#94A3B8; line-height:1.7;">OpenClaw combines all of this into a single prompt and sends it to an LLM (Claude, GPT, DeepSeek — you choose). The prompt looks roughly like this:</div>
+        <div style="font-size:12px; color:#CBD5E1; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.3); font-family:monospace; line-height:1.8; margin-top:12px; border:1px solid rgba(255,255,255,0.06);">
+          [SOUL.md contents]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#64748B;">← who you are</span><br>
+          [USER.md contents]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#64748B;">← who I am</span><br>
+          [IDENTITY.md contents]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#64748B;">← agent persona</span><br>
+          [TOOLS.md contents]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#64748B;">← how to use my tools</span><br>
+          [memory/2026-03-05.md]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#64748B;">← yesterday</span><br>
+          [memory/2026-03-06.md]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#64748B;">← today so far</span><br>
+          [available skills list]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#64748B;">← what I can do</span><br>
+          <span style="color:#F1F5F9; font-weight:600;">"Do I have meetings tomorrow?"</span>&nbsp;<span style="color:#64748B;">← your message</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div style="display:flex; gap:20px; align-items:flex-start; padding:20px 0;">
+      <div style="flex-shrink:0; width:56px; height:56px; border-radius:50%; background:rgba(52,211,153,0.12); border:2px solid rgba(52,211,153,0.3); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; color:#34D399; position:relative; z-index:1;">4</div>
+      <div style="flex:1; padding:20px 24px; border-radius:16px; border:1px solid rgba(52,211,153,0.15); background:rgba(52,211,153,0.03);">
+        <div style="font-size:11px; font-weight:700; letter-spacing:1.5px; color:#34D399; margin-bottom:6px;">THE LLM THINKS AND ACTS</div>
+        <div style="font-size:17px; font-weight:700; color:#F1F5F9; margin-bottom:8px;">The Agent Loop: reason, act, observe, repeat</div>
+        <div style="font-size:14px; color:#94A3B8; line-height:1.7;">The LLM reads the prompt and decides it needs to check your calendar. It calls the <b style="color:#F1F5F9;">calendar skill</b> (a code module installed from ClawHub). The skill fetches tomorrow's events. The LLM sees 3 meetings, then calls the <b style="color:#F1F5F9;">web-search skill</b> to research each topic, then calls a <b style="color:#F1F5F9;">document skill</b> to draft summaries. Each step is: <span style="color:#34D399;">think → call a skill → read the result → think again</span>. This loop repeats until the task is done.</div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:6px; margin-top:14px; padding:14px; border-radius:10px; background:rgba(0,0,0,0.2); flex-wrap:wrap;">
+          <div style="padding:8px 14px; border-radius:8px; font-size:12px; font-weight:600; background:rgba(168,85,247,0.15); color:#A855F7; border:1px solid rgba(168,85,247,0.2);">LLM thinks</div>
+          <div style="color:#475569;">→</div>
+          <div style="padding:8px 14px; border-radius:8px; font-size:12px; font-weight:600; background:rgba(251,191,36,0.15); color:#FBBF24; border:1px solid rgba(251,191,36,0.2);">calls calendar skill</div>
+          <div style="color:#475569;">→</div>
+          <div style="padding:8px 14px; border-radius:8px; font-size:12px; font-weight:600; background:rgba(52,211,153,0.15); color:#34D399; border:1px solid rgba(52,211,153,0.2);">reads result</div>
+          <div style="color:#475569;">→</div>
+          <div style="padding:8px 14px; border-radius:8px; font-size:12px; font-weight:600; background:rgba(168,85,247,0.15); color:#A855F7; border:1px solid rgba(168,85,247,0.2);">thinks again</div>
+          <div style="color:#475569;">→</div>
+          <div style="padding:8px 14px; border-radius:8px; font-size:12px; font-weight:600; background:rgba(251,191,36,0.15); color:#FBBF24; border:1px solid rgba(251,191,36,0.2);">calls web-search</div>
+          <div style="color:#475569;">→</div>
+          <div style="padding:8px 14px; border-radius:8px; font-size:12px; font-weight:600; background:rgba(244,63,94,0.15); color:#F43F5E; border:1px solid rgba(244,63,94,0.2);">done!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div style="display:flex; gap:20px; align-items:flex-start; padding:20px 0;">
+      <div style="flex-shrink:0; width:56px; height:56px; border-radius:50%; background:rgba(96,165,250,0.12); border:2px solid rgba(96,165,250,0.3); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; color:#60A5FA; position:relative; z-index:1;">5</div>
+      <div style="flex:1; padding:20px 24px; border-radius:16px; border:1px solid rgba(96,165,250,0.15); background:rgba(96,165,250,0.03);">
+        <div style="font-size:11px; font-weight:700; letter-spacing:1.5px; color:#60A5FA; margin-bottom:6px;">YOU GET A REPLY</div>
+        <div style="font-size:17px; font-weight:700; color:#F1F5F9; margin-bottom:8px;">Back to Discord with the answer</div>
+        <div style="font-size:14px; color:#94A3B8; line-height:1.7;">The final answer flows back through the Gateway to your Discord chat. You see: <span style="color:#F1F5F9;">"You have 3 meetings tomorrow. Here are the summaries..."</span> with a document attached. The whole exchange took ~15 seconds. To you, it felt like texting a really fast colleague.</div>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div style="display:flex; gap:20px; align-items:flex-start; padding:20px 0;">
+      <div style="flex-shrink:0; width:56px; height:56px; border-radius:50%; background:rgba(244,63,94,0.12); border:2px solid rgba(244,63,94,0.3); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; color:#F43F5E; position:relative; z-index:1;">6</div>
+      <div style="flex:1; padding:20px 24px; border-radius:16px; border:1px solid rgba(244,63,94,0.15); background:rgba(244,63,94,0.03);">
+        <div style="font-size:11px; font-weight:700; letter-spacing:1.5px; color:#F43F5E; margin-bottom:6px;">THE AGENT REMEMBERS</div>
+        <div style="font-size:17px; font-weight:700; color:#F1F5F9; margin-bottom:8px;">Today's log gets updated</div>
+        <div style="font-size:14px; color:#94A3B8; line-height:1.7;">OpenClaw appends a note to <code style="color:#CBD5E1; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px;">memory/2026-03-06.md</code>: "Yeesun asked about tomorrow's meetings. Prepared 3 summaries." Next time you chat, the agent already knows this happened — no need to repeat yourself.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The Heartbeat — separate concept -->
+  <div style="padding:24px 28px; border-radius:16px; border:1px solid rgba(251,191,36,0.2); background:rgba(251,191,36,0.04); margin-bottom:32px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+      <div style="font-size:28px;">💓</div>
+      <div>
+        <div style="font-size:18px; font-weight:800; color:#F1F5F9;">The Heartbeat: Proactive Mode</div>
+        <div style="font-size:12px; color:#FBBF24; font-weight:600;">Not just reactive — OpenClaw can act on its own</div>
+      </div>
+    </div>
+    <div style="font-size:14px; color:#94A3B8; line-height:1.7; margin-bottom:14px;">The 6 steps above happen when <b style="color:#F1F5F9;">you</b> message the agent. But OpenClaw can also wake itself up. Every 30 minutes, it reads a special file called <b style="color:#FBBF24;">HEARTBEAT.md</b> — a checklist of things to watch for. If a condition is met, the agent messages <em>you</em> first.</div>
+    <div style="font-size:12px; color:#CBD5E1; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.3); font-family:monospace; line-height:1.8; border:1px solid rgba(255,255,255,0.06);">
+      # Heartbeat — check every 30 min<br>
+      - If email from my manager → summarize and notify me<br>
+      - If meeting starts in &lt;30 min → send me a reminder<br>
+      - If any GitHub PR needs my review → ping me once<br>
+      - Only message me if something actually needs attention
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">📁 THE KEY INSIGHT</div>
+    <div class="insight-text">OpenClaw is only as smart as the prompt it constructs — and <b>you control every file that goes into that prompt</b>. Edit SOUL.md to change who the agent is. Edit HEARTBEAT.md to change what it watches for. Edit memory files to change what it remembers. Every behavior is traceable to a plain text file on your disk. This "workspace-first" design means your agent is portable, version-controllable, and completely transparent.</div>
+  </div>
+
+  <div class="insight" style="border-color:rgba(96,165,250,0.15); background:rgba(96,165,250,0.04);">
+    <div class="insight-label" style="color:#60A5FA;">🏠 LOCAL-FIRST</div>
+    <div class="insight-text">Everything runs on <b>your computer</b>. The gateway, the skills, and the memory all stay local. Only the LLM reasoning calls go to the cloud (unless you run a local model). This is a key part of OpenClaw's appeal — and its risk: your computer becomes the execution environment, with all its data accessible to the agent.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 5: WHAT CAN IT DO        -->
+  <!-- ================================ -->
+  <div class="divider"><span>CAPABILITIES</span></div>
+
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <h2>What Can OpenClaw Do?</h2>
+    <div class="section-sub">Real tasks people are using it for today</div>
+  </div>
+
+  <div class="cmp-table-wrap">
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Example Tasks</th>
+          <th>How It Works</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b style="color:#F1F5F9;">📧 Email & Messages</b></td>
+          <td>Read, summarize, draft, and send emails. Reply to messages on your behalf.</td>
+          <td>Connects to email via IMAP/SMTP. Reads messages, uses LLM to draft responses, sends with your approval.</td>
+        </tr>
+        <tr>
+          <td><b style="color:#F1F5F9;">📅 Calendar</b></td>
+          <td>Schedule meetings, check availability, send invites, set reminders.</td>
+          <td>Integrates with Google Calendar / CalDAV. Parses natural language ("set up a call with Lisa next Tuesday").</td>
+        </tr>
+        <tr>
+          <td><b style="color:#F1F5F9;">🌐 Web Browsing</b></td>
+          <td>Research topics, compare prices, fill forms, book travel.</td>
+          <td>Uses Puppeteer for browser automation. Can navigate, click, fill forms, and extract data from any website.</td>
+        </tr>
+        <tr>
+          <td><b style="color:#F1F5F9;">📁 File Management</b></td>
+          <td>Summarize PDFs, organize files, convert formats, search documents.</td>
+          <td>Direct file system access. Reads, writes, and organizes files on your computer.</td>
+        </tr>
+        <tr>
+          <td><b style="color:#F1F5F9;">🛒 Shopping</b></td>
+          <td>Compare products, track prices, place orders (with approval).</td>
+          <td>Browses shopping sites, extracts product data, presents comparisons, asks before purchasing.</td>
+        </tr>
+        <tr>
+          <td><b style="color:#F1F5F9;">💻 System Tasks</b></td>
+          <td>Run shell commands, install software, manage processes.</td>
+          <td>Executes commands directly on your OS. This is the most powerful — and most dangerous — capability.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 6: THE SECURITY DEBATE   -->
+  <!-- ================================ -->
+  <div class="divider"><span>THE CONTROVERSY</span></div>
+
+  <div class="section-header">
+    <div class="section-num">06</div>
+    <h2>The Security Debate</h2>
+    <div class="section-sub">Why Microsoft, Cisco, and Palo Alto Networks published warnings about OpenClaw</div>
+  </div>
+
+  <div class="sec-grid">
+    <div class="sec-card">
+      <div class="sec-icon">🎯</div>
+      <div class="sec-title">Prompt Injection</div>
+      <div class="sec-desc">If OpenClaw reads a malicious email or web page containing hidden instructions, it could be tricked into executing commands on your system — exfiltrating data, deleting files, or sending unauthorized messages.</div>
+      <div class="sec-risk">⚠️ Researchers at Giskard demonstrated account takeover via a crafted email attachment.</div>
+    </div>
+    <div class="sec-card">
+      <div class="sec-icon">🔓</div>
+      <div class="sec-title">Excessive Permissions</div>
+      <div class="sec-desc">OpenClaw often runs with full access to your OS — shell commands, file system, email, browser. A single mistake or vulnerability can cascade into total system compromise. 30,000+ exposed instances were found in a 2-week scan.</div>
+      <div class="sec-risk">⚠️ CVE-2026-25253 (CVSS 8.8): Remote code execution chain, patched Jan 30, 2026.</div>
+    </div>
+    <div class="sec-card">
+      <div class="sec-icon">🧩</div>
+      <div class="sec-title">Malicious Skills (Supply Chain)</div>
+      <div class="sec-desc">Anyone can publish skills to ClawHub. Unvetted or malicious skills may contain code that delivers malware. If OpenClaw has full OS access, a malicious skill can do anything on your machine.</div>
+      <div class="sec-risk">⚠️ No mandatory code review for published skills. Trust model relies on community flagging.</div>
+    </div>
+    <div class="sec-card">
+      <div class="sec-icon">🔑</div>
+      <div class="sec-title">Plaintext Secrets</div>
+      <div class="sec-desc">API keys, messaging platform tokens, and credentials are stored in plaintext configuration files. If an attacker accesses the file system (via a skill exploit or shared session), they get everything.</div>
+      <div class="sec-risk">⚠️ Shared "main" session design means multiple users can accidentally see each other's data.</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">⚖️ THE CORE TENSION</div>
+    <div class="insight-text">OpenClaw is powerful <b>because</b> it has deep system access. But that same access makes it dangerous. This is the fundamental tradeoff of AI agents: <b>the more an agent can do, the more damage it can do if something goes wrong</b>. OpenClaw is the first project to make this tradeoff visible at massive scale — and the security community's response is shaping how all future agents will be built.</div>
+  </div>
+
+  <!-- ================================ -->
+  <!-- SECTION 7: WHY IT MATTERS        -->
+  <!-- ================================ -->
+  <div class="divider"><span>THE BIGGER PICTURE</span></div>
+
+  <div class="section-header">
+    <div class="section-num">07</div>
+    <h2>Why OpenClaw Matters</h2>
+    <div class="section-sub">Beyond the hype — what it signals about the future of AI agents</div>
+  </div>
+
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon">📱</div>
+      <div class="why-title">Messaging as Interface</div>
+      <div class="why-desc">OpenClaw proved that people don't want another app — they want AI in the apps they already use. WhatsApp, Signal, Telegram become the control center. This "meet users where they are" approach is now being copied by every major player.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🏠</div>
+      <div class="why-title">Local-First AI</div>
+      <div class="why-desc">Your data stays on your machine. Your agent runs on your hardware. In a world of cloud-first everything, OpenClaw represents the countermovement: AI that's truly personal and private (if configured correctly).</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🌍</div>
+      <div class="why-title">Open Source Wins (Again)</div>
+      <div class="why-desc">250K stars in 4 months. Anyone can inspect, modify, and extend the code. The skill marketplace is community-driven. This is the Linux moment for AI agents — proving that open ecosystems move faster than closed ones.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">⚠️</div>
+      <div class="why-title">The Security Wake-Up Call</div>
+      <div class="why-desc">Microsoft, Cisco, Palo Alto Networks, and Mastercard all published security advisories. OpenClaw forced the industry to confront: what happens when millions of people give AI agents full access to their computers? The answer is shaping new security standards.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🔧</div>
+      <div class="why-title">Skills as the New Apps</div>
+      <div class="why-desc">ClawHub is an app store for agent capabilities. Install a "travel" skill and your agent can book flights. Install a "coding" skill and it writes code. This plugin model — skills that extend agent capabilities — is becoming the standard pattern across all agent platforms.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🚀</div>
+      <div class="why-title">One Person, One Agent</div>
+      <div class="why-desc">OpenClaw's persistent memory means it learns <b>you</b> over time — your preferences, schedule, communication style. This is the vision: not a generic chatbot, but a personal AI that knows you as well as a long-time assistant would.</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">🔮 LOOKING AHEAD</div>
+    <div class="insight-text">In February 2026, creator Peter Steinberger joined OpenAI. The OpenClaw project continues as a community-driven open-source effort. Whether OpenClaw itself becomes the dominant personal agent or simply proved the model, its impact is permanent: <b>the era of personal AI agents has arrived, and there's no going back</b>.</div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="AI_Agents.html" class="nav-link prev-link">Part 3: AI Agents</a>
+  <div class="footer-left"><b>AI Agent Workshop</b> · Week 1</div>
+</footer>
+
+</div>
+</body>
+</html>

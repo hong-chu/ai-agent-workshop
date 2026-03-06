@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Part 2: The AI Companies — AI Agent Workshop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0B1120;
+    color: #E2E8F0;
+  }
+
+  /* === BACKGROUND PATTERN === */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === NAV BAR === */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(11,17,32,0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 40px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav .brand {
+    font-size: 15px; font-weight: 700; color: #F8FAFC;
+    letter-spacing: -0.3px;
+  }
+  nav .brand span { color: #60A5FA; }
+  nav .links { display: flex; gap: 6px; }
+  nav .links a {
+    font-size: 13px; font-weight: 500; color: #64748B;
+    text-decoration: none; padding: 6px 14px; border-radius: 8px;
+    transition: all 0.2s;
+  }
+  nav .links a:hover { color: #CBD5E1; background: rgba(255,255,255,0.05); }
+  nav .links a.active {
+    color: #F1F5F9; background: rgba(255,255,255,0.08);
+    font-weight: 600;
+  }
+
+  /* === MAIN CONTENT === */
+  .page {
+    max-width: 1200px; margin: 0 auto;
+    padding: 100px 30px 60px;
+    position: relative; z-index: 1;
+  }
+
+  /* === PAGE HEADER === */
+  .part-label {
+    text-align: center; font-size: 12px; font-weight: 700;
+    letter-spacing: 2.5px; color: #A855F7;
+    margin-bottom: 12px;
+    animation: fadeInDown 0.6s ease both;
+  }
+  h1 {
+    font-size: 48px; font-weight: 800; text-align: center;
+    color: #F8FAFC; margin-bottom: 8px; letter-spacing: -1px;
+    animation: fadeInDown 0.6s ease 0.1s both;
+  }
+  .sub {
+    text-align: center; font-size: 18px; color: #64748B;
+    margin-bottom: 14px;
+    animation: fadeInDown 0.6s ease 0.15s both;
+  }
+  .intro {
+    text-align: center; font-size: 16px; color: #94A3B8;
+    max-width: 720px; margin: 0 auto 56px; line-height: 1.7;
+    animation: fadeInDown 0.6s ease 0.2s both;
+  }
+
+  /* === SECTION HEADERS === */
+  .section-header {
+    margin-bottom: 32px;
+  }
+  .section-header .section-num {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #475569; margin-bottom: 8px;
+  }
+  .section-header h2 {
+    font-size: 32px; font-weight: 800; color: #F1F5F9;
+    letter-spacing: -0.5px;
+  }
+  .section-header .section-sub {
+    font-size: 15px; color: #64748B; margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* === DIVIDER === */
+  .divider {
+    text-align: center;
+    margin: 72px 0 56px;
+    position: relative;
+  }
+  .divider::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  }
+  .divider span {
+    position: relative; z-index: 1;
+    background: #0B1120;
+    padding: 0 24px;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 2px; color: #475569;
+    text-transform: uppercase;
+  }
+
+  /* === COMPANY OVERVIEW CARDS === */
+  .company-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+    animation: fadeInUp 0.5s ease 0.3s both;
+  }
+  .company-grid.row2 {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 75%;
+    margin: 0 auto 0;
+    animation: fadeInUp 0.5s ease 0.4s both;
+  }
+  .co-card {
+    padding: 24px 20px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.3s ease;
+    cursor: default;
+    text-align: center;
+  }
+  .co-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .co-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800; color: #fff;
+    margin: 0 auto 14px;
+  }
+  .co-card .co-name {
+    font-size: 18px; font-weight: 800; color: #F1F5F9;
+    margin-bottom: 3px;
+  }
+  .co-card .co-tagline {
+    font-size: 12px; color: #64748B; margin-bottom: 10px;
+    font-style: italic;
+  }
+  .co-card .co-model {
+    font-size: 13px; font-weight: 600; color: #94A3B8;
+    margin-bottom: 8px;
+  }
+  .co-card .co-val {
+    font-size: 20px; font-weight: 800; margin-bottom: 6px;
+  }
+  .co-card .co-badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .badge-closed { background: rgba(239,68,68,0.15); color: #FCA5A5; }
+  .badge-open { background: rgba(16,185,129,0.15); color: #6EE7B7; }
+  .badge-mixed { background: rgba(245,158,11,0.15); color: #FCD34D; }
+
+  /* Company card colors */
+  .co-card.openai { border-color: rgba(16,185,129,0.15); }
+  .co-card.openai:hover { border-color: rgba(16,185,129,0.3); box-shadow: 0 8px 32px rgba(16,185,129,0.08); }
+  .co-card.openai .co-icon { background: linear-gradient(135deg, #10B981, #059669); }
+  .co-card.openai .co-val { color: #6EE7B7; }
+
+  .co-card.anthropic { border-color: rgba(217,176,131,0.15); }
+  .co-card.anthropic:hover { border-color: rgba(217,176,131,0.3); box-shadow: 0 8px 32px rgba(217,176,131,0.08); }
+  .co-card.anthropic .co-icon { background: linear-gradient(135deg, #D9B083, #C49A6C); }
+  .co-card.anthropic .co-val { color: #D9B083; }
+
+  .co-card.google { border-color: rgba(59,130,246,0.15); }
+  .co-card.google:hover { border-color: rgba(59,130,246,0.3); box-shadow: 0 8px 32px rgba(59,130,246,0.08); }
+  .co-card.google .co-icon { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+  .co-card.google .co-val { color: #93C5FD; }
+
+  .co-card.meta { border-color: rgba(59,130,246,0.15); }
+  .co-card.meta:hover { border-color: rgba(99,102,241,0.3); box-shadow: 0 8px 32px rgba(99,102,241,0.08); }
+  .co-card.meta .co-icon { background: linear-gradient(135deg, #6366F1, #4F46E5); }
+  .co-card.meta .co-val { color: #A5B4FC; }
+
+  .co-card.mistral { border-color: rgba(249,115,22,0.15); }
+  .co-card.mistral:hover { border-color: rgba(249,115,22,0.3); box-shadow: 0 8px 32px rgba(249,115,22,0.08); }
+  .co-card.mistral .co-icon { background: linear-gradient(135deg, #F97316, #EA580C); }
+  .co-card.mistral .co-val { color: #FDBA74; }
+
+  .co-card.xai { border-color: rgba(148,163,184,0.15); }
+  .co-card.xai:hover { border-color: rgba(148,163,184,0.3); box-shadow: 0 8px 32px rgba(148,163,184,0.08); }
+  .co-card.xai .co-icon { background: linear-gradient(135deg, #64748B, #475569); }
+  .co-card.xai .co-val { color: #CBD5E1; }
+
+  .co-card.deepseek { border-color: rgba(6,182,212,0.15); }
+  .co-card.deepseek:hover { border-color: rgba(6,182,212,0.3); box-shadow: 0 8px 32px rgba(6,182,212,0.08); }
+  .co-card.deepseek .co-icon { background: linear-gradient(135deg, #06B6D4, #0891B2); }
+  .co-card.deepseek .co-val { color: #67E8F9; }
+
+  /* === PROFILE SECTIONS === */
+  .profile {
+    margin-bottom: 48px;
+    padding: 36px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+  }
+  .profile .profile-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 8px;
+  }
+  .profile .profile-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .profile .profile-name {
+    font-size: 26px; font-weight: 800;
+  }
+  .profile .profile-tagline {
+    font-size: 15px; font-style: italic; opacity: 0.5;
+    margin-bottom: 20px;
+  }
+
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-bottom: 24px;
+  }
+  .stat {
+    padding: 14px 16px; border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .stat .stat-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: #475569; margin-bottom: 4px;
+  }
+  .stat .stat-value {
+    font-size: 18px; font-weight: 800; color: #F1F5F9;
+  }
+
+  .profile p {
+    font-size: 15px; line-height: 1.85; color: #94A3B8;
+    margin-bottom: 14px;
+  }
+  .profile p b { color: #CBD5E1; font-weight: 600; }
+  .profile .key-move {
+    padding: 18px 22px; border-radius: 10px;
+    font-size: 14px; line-height: 1.7;
+    margin-top: 20px;
+  }
+  .profile .key-move b { font-weight: 700; }
+
+  /* Profile colors */
+  .profile.p-openai { border-color: rgba(16,185,129,0.12); }
+  .profile.p-openai .profile-icon { background: linear-gradient(135deg, #10B981, #059669); }
+  .profile.p-openai .profile-name { color: #6EE7B7; }
+  .profile.p-openai .key-move { background: rgba(16,185,129,0.06); border-left: 3px solid #10B981; color: #6EE7B7; }
+
+  .profile.p-anthropic { border-color: rgba(217,176,131,0.12); }
+  .profile.p-anthropic .profile-icon { background: linear-gradient(135deg, #D9B083, #C49A6C); }
+  .profile.p-anthropic .profile-name { color: #D9B083; }
+  .profile.p-anthropic .key-move { background: rgba(217,176,131,0.06); border-left: 3px solid #D9B083; color: #D9B083; }
+
+  .profile.p-google { border-color: rgba(59,130,246,0.12); }
+  .profile.p-google .profile-icon { background: linear-gradient(135deg, #3B82F6, #2563EB); }
+  .profile.p-google .profile-name { color: #93C5FD; }
+  .profile.p-google .key-move { background: rgba(59,130,246,0.06); border-left: 3px solid #3B82F6; color: #93C5FD; }
+
+  .profile.p-meta { border-color: rgba(99,102,241,0.12); }
+  .profile.p-meta .profile-icon { background: linear-gradient(135deg, #6366F1, #4F46E5); }
+  .profile.p-meta .profile-name { color: #A5B4FC; }
+  .profile.p-meta .key-move { background: rgba(99,102,241,0.06); border-left: 3px solid #6366F1; color: #A5B4FC; }
+
+  /* === CHALLENGERS GRID === */
+  .challengers-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; margin-top: 32px;
+  }
+  .challenger {
+    padding: 28px; border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.25s ease;
+  }
+  .challenger:hover {
+    border-color: rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+  }
+  .challenger .ch-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 6px;
+  }
+  .challenger .ch-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .challenger .ch-name { font-size: 18px; font-weight: 800; color: #F1F5F9; }
+  .challenger .ch-meta {
+    font-size: 12px; color: #64748B; margin-bottom: 12px;
+    padding-left: 48px;
+  }
+  .challenger .ch-desc {
+    font-size: 14px; line-height: 1.7; color: #94A3B8;
+  }
+  .challenger .ch-desc b { color: #CBD5E1; font-weight: 600; }
+
+  /* === OPEN vs CLOSED === */
+  .vs-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    margin: 28px 0;
+  }
+  .vs-card {
+    padding: 28px; border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .vs-card h3 {
+    font-size: 22px; font-weight: 800; margin-bottom: 6px;
+  }
+  .vs-card .vs-models {
+    font-size: 13px; font-weight: 600; opacity: 0.5;
+    margin-bottom: 16px;
+  }
+  .vs-card ul {
+    list-style: none; padding: 0;
+  }
+  .vs-card li {
+    font-size: 14px; color: #94A3B8; padding: 7px 0;
+    padding-left: 24px; position: relative; line-height: 1.6;
+  }
+  .vs-card li.pro::before { content: '✓'; position: absolute; left: 0; color: #6EE7B7; font-weight: 700; }
+  .vs-card li.con::before { content: '✗'; position: absolute; left: 0; color: #FCA5A5; font-weight: 700; }
+  .vs-card li b { color: #CBD5E1; font-weight: 600; }
+  .vs-card.open-card { background: rgba(16,185,129,0.04); }
+  .vs-card.open-card h3 { color: #6EE7B7; }
+  .vs-card.closed-card { background: rgba(239,68,68,0.04); }
+  .vs-card.closed-card h3 { color: #FCA5A5; }
+
+  .vs-verdict {
+    margin-top: 20px; padding: 18px 22px; border-radius: 12px;
+    background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.15);
+    font-size: 14px; line-height: 1.75; color: #94A3B8;
+  }
+  .vs-verdict b { color: #D8B4FE; }
+
+  /* === ECOSYSTEM DIAGRAM === */
+  .ecosystem {
+    margin: 32px 0;
+  }
+  .eco-layers {
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .eco-layer {
+    padding: 24px 28px;
+    display: flex; align-items: center; gap: 24px;
+    position: relative;
+  }
+  .eco-layer::after {
+    content: '↓';
+    position: absolute;
+    bottom: -14px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px; color: #334155;
+    z-index: 2;
+  }
+  .eco-layer:last-child::after { display: none; }
+  .eco-label {
+    min-width: 140px; font-size: 12px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase; flex-shrink: 0;
+  }
+  .eco-items {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .eco-item {
+    padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    transition: all 0.2s;
+  }
+  .eco-item:hover { background: rgba(255,255,255,0.06); }
+  .eco-desc {
+    font-size: 12px; color: #64748B; margin-left: auto;
+    max-width: 280px; text-align: right; line-height: 1.5;
+  }
+
+  .eco-layer.l-chips { border-left: 3px solid #EF4444; background: rgba(239,68,68,0.03); border-radius: 12px 12px 0 0; }
+  .eco-layer.l-chips .eco-label { color: #FCA5A5; }
+  .eco-layer.l-chips .eco-item { color: #FCA5A5; border-color: rgba(239,68,68,0.15); }
+
+  .eco-layer.l-cloud { border-left: 3px solid #F59E0B; background: rgba(245,158,11,0.03); }
+  .eco-layer.l-cloud .eco-label { color: #FCD34D; }
+  .eco-layer.l-cloud .eco-item { color: #FCD34D; border-color: rgba(245,158,11,0.15); }
+
+  .eco-layer.l-models { border-left: 3px solid #A855F7; background: rgba(168,85,247,0.03); }
+  .eco-layer.l-models .eco-label { color: #D8B4FE; }
+  .eco-layer.l-models .eco-item { color: #D8B4FE; border-color: rgba(168,85,247,0.15); }
+
+  .eco-layer.l-apps { border-left: 3px solid #10B981; background: rgba(16,185,129,0.03); border-radius: 0 0 12px 12px; }
+  .eco-layer.l-apps .eco-label { color: #6EE7B7; }
+  .eco-layer.l-apps .eco-item { color: #6EE7B7; border-color: rgba(16,185,129,0.15); }
+
+  /* === FOOTER === */
+  footer {
+    margin-top: 72px;
+    padding: 40px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer .footer-left {
+    font-size: 14px; color: #475569;
+  }
+  footer .footer-left b { color: #64748B; font-weight: 600; }
+  footer a.nav-link {
+    font-size: 14px; font-weight: 600;
+    text-decoration: none; padding: 10px 20px;
+    border-radius: 10px;
+    transition: all 0.2s;
+  }
+  footer .prev-link { color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); }
+  footer .prev-link:hover { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.5); }
+  footer .next-link { color: #10B981; border: 1px solid rgba(16,185,129,0.3); }
+  footer .next-link:hover { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.5); }
+  footer .footer-nav { display: flex; gap: 12px; }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<nav>
+  <div class="brand"><span>AI</span> Agent Workshop</div>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="AI_Vocabulary.html">Part 0: Vocabulary</a>
+    <a href="AI_Timeline.html">Part 1: AI Evolution</a>
+    <a href="AI_Companies.html" class="active">Part 2: AI Companies</a>
+    <a href="AI_Agents.html">Part 3: AI Agents</a>
+    <a href="AI_OpenClaw.html">Part 4: OpenClaw</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="part-label">PART 2</div>
+  <h1>The AI Companies</h1>
+  <p class="sub">From a two-player game to a multipolar landscape</p>
+  <p class="intro">In 2023, the AI industry was OpenAI vs Google. By 2026, there are 12+ frontier models competing globally — from Silicon Valley giants to a Chinese lab that trained a GPT-4-level model for $6 million. Here's who's who and why it matters.</p>
+
+  <!-- ===== SECTION 1: COMPANY OVERVIEW ===== -->
+  <div class="company-grid">
+    <div class="co-card openai">
+      <div class="co-icon">O</div>
+      <div class="co-name">OpenAI</div>
+      <div class="co-tagline">The Pioneer</div>
+      <div class="co-model">GPT-5 · o3</div>
+      <div class="co-val">$730B</div>
+      <div class="co-badge badge-closed">Closed</div>
+    </div>
+    <div class="co-card anthropic">
+      <div class="co-icon">A</div>
+      <div class="co-name">Anthropic</div>
+      <div class="co-tagline">Safety-First Challenger</div>
+      <div class="co-model">Claude Opus 4.6</div>
+      <div class="co-val">$380B</div>
+      <div class="co-badge badge-closed">Closed</div>
+    </div>
+    <div class="co-card google">
+      <div class="co-icon">G</div>
+      <div class="co-name">Google</div>
+      <div class="co-tagline">Research Powerhouse</div>
+      <div class="co-model">Gemini 3 Pro</div>
+      <div class="co-val">N/A*</div>
+      <div class="co-badge badge-closed">Closed</div>
+    </div>
+    <div class="co-card meta">
+      <div class="co-icon">M</div>
+      <div class="co-name">Meta</div>
+      <div class="co-tagline">Open-Source Champion</div>
+      <div class="co-model">Llama 4</div>
+      <div class="co-val">N/A*</div>
+      <div class="co-badge badge-open">Open</div>
+    </div>
+  </div>
+  <div class="company-grid row2">
+    <div class="co-card mistral">
+      <div class="co-icon">Mi</div>
+      <div class="co-name">Mistral</div>
+      <div class="co-tagline">Europe's Champion</div>
+      <div class="co-model">Large 3</div>
+      <div class="co-val">$13.8B</div>
+      <div class="co-badge badge-mixed">Mixed</div>
+    </div>
+    <div class="co-card xai">
+      <div class="co-icon">X</div>
+      <div class="co-name">xAI</div>
+      <div class="co-tagline">Musk's Contender</div>
+      <div class="co-model">Grok 4</div>
+      <div class="co-val">$50B</div>
+      <div class="co-badge badge-closed">Closed</div>
+    </div>
+    <div class="co-card deepseek">
+      <div class="co-icon">D</div>
+      <div class="co-name">DeepSeek</div>
+      <div class="co-tagline">The Efficiency Disruptor</div>
+      <div class="co-model">V3.2</div>
+      <div class="co-val">Private</div>
+      <div class="co-badge badge-open">Open</div>
+    </div>
+  </div>
+  <p style="text-align:center; font-size:12px; color:#475569; margin-top:16px; font-style:italic;">* Part of larger parent companies (Alphabet, Meta Platforms). Valuations refer to AI division estimates where applicable.</p>
+
+  <!-- ===== SECTION 2: THE BIG FOUR ===== -->
+  <div class="divider"><span>The Big Four</span></div>
+
+  <!-- OpenAI -->
+  <div class="profile p-openai">
+    <div class="profile-header">
+      <div class="profile-icon">O</div>
+      <div class="profile-name">OpenAI</div>
+    </div>
+    <div class="profile-tagline">The Pioneer — "Move fast and scale everything"</div>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-label">Valuation</div><div class="stat-value">$730B</div></div>
+      <div class="stat"><div class="stat-label">Revenue</div><div class="stat-value">$19-20B</div></div>
+      <div class="stat"><div class="stat-label">Flagship</div><div class="stat-value">GPT-5</div></div>
+      <div class="stat"><div class="stat-label">Founded</div><div class="stat-value">2015</div></div>
+    </div>
+    <p>Founded as a non-profit research lab, OpenAI pivoted to a capped-profit model and has since become the <b>most valuable private AI company in the world</b>. Their ChatGPT brought AI to the mainstream — reaching 100 million users in just 2 months — and their GPT series has consistently set the pace for the industry.</p>
+    <p>With <b>$19-20 billion in annual recurring revenue</b>, OpenAI is the clear revenue leader. Their model lineup spans from GPT-5 (their most capable flagship) to o3/o4-mini (reasoning specialists), plus specialized models like GPT-4.1 for coding. OpenAI's strategy is aggressive: scale the models, scale the user base, scale the infrastructure.</p>
+    <div class="key-move">
+      <b>Key strategic move:</b> The $500 billion <b>Stargate</b> infrastructure partnership with SoftBank and Oracle — the largest AI infrastructure project ever announced. This signals OpenAI's belief that the next breakthroughs will come from massive compute, and they're securing it before competitors can.
+    </div>
+  </div>
+
+  <!-- Anthropic -->
+  <div class="profile p-anthropic">
+    <div class="profile-header">
+      <div class="profile-icon">A</div>
+      <div class="profile-name">Anthropic</div>
+    </div>
+    <div class="profile-tagline">The Safety-First Challenger — "Helpful, Harmless, and Honest"</div>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-label">Valuation</div><div class="stat-value">$380B</div></div>
+      <div class="stat"><div class="stat-label">Revenue</div><div class="stat-value">$14B ARR</div></div>
+      <div class="stat"><div class="stat-label">Flagship</div><div class="stat-value">Claude Opus</div></div>
+      <div class="stat"><div class="stat-label">Founded</div><div class="stat-value">2021</div></div>
+    </div>
+    <p>Founded by former OpenAI researchers Dario and Daniela Amodei, Anthropic was born from a conviction that AI safety needed to be a <b>first-class priority</b>, not an afterthought. Their Claude models compete at the frontier while emphasizing safety through <b>Constitutional AI</b> — a technique where the model is trained against a set of principles rather than just human feedback.</p>
+    <p>Anthropic's growth has been staggering: <b>10x annual revenue growth for 3 consecutive years</b>, reaching $14 billion ARR. Their Claude models are known for strong coding, long-context understanding (200K tokens), and agentic capabilities. Claude Code alone generates over $2.5 billion in revenue.</p>
+    <div class="key-move">
+      <b>Key strategic move:</b> Betting heavily on <b>AI agents and safety research</b>. While others race to build the biggest model, Anthropic is building models that can autonomously complete multi-step tasks (agents) while maintaining the strongest safety guardrails in the industry. Their thesis: the company that solves safe autonomy wins the long game.
+    </div>
+  </div>
+
+  <!-- Google -->
+  <div class="profile p-google">
+    <div class="profile-header">
+      <div class="profile-icon">G</div>
+      <div class="profile-name">Google DeepMind</div>
+    </div>
+    <div class="profile-tagline">The Research Powerhouse — "We invented the Transformer"</div>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-label">Parent</div><div class="stat-value">Alphabet</div></div>
+      <div class="stat"><div class="stat-label">Formed</div><div class="stat-value">2023 merge</div></div>
+      <div class="stat"><div class="stat-label">Flagship</div><div class="stat-value">Gemini 3</div></div>
+      <div class="stat"><div class="stat-label">Context</div><div class="stat-value">1M+ tokens</div></div>
+    </div>
+    <p>Created from the 2023 merger of Google Brain and DeepMind, Google DeepMind has the <b>deepest research bench in AI</b>. They literally invented the Transformer (the 2017 paper came from Google researchers). Their legacy includes AlphaGo, AlphaFold (protein folding), and now Gemini — their flagship model family.</p>
+    <p>The Gemini 3 family (now up to <b>Gemini 3.1 Pro</b>) leads several benchmarks, with <b>Gemini 3 Deep Think</b> achieving gold-medal level math performance and solving 4 previously open mathematical questions autonomously. Their massive advantage: <b>integration across Google's ecosystem</b> — Search, Cloud, Android, Workspace — giving them distribution that startups can only dream of.</p>
+    <div class="key-move">
+      <b>Key strategic move:</b> <b>Integration, not isolation.</b> While OpenAI and Anthropic sell models via API, Google embeds AI directly into products used by billions: AI Overviews in Search, Gemini in Gmail, AI agents in Google Cloud. Their bet is that AI embedded everywhere beats AI as a standalone product.
+    </div>
+  </div>
+
+  <!-- Meta -->
+  <div class="profile p-meta">
+    <div class="profile-header">
+      <div class="profile-icon">M</div>
+      <div class="profile-name">Meta AI</div>
+    </div>
+    <div class="profile-tagline">The Open-Source Champion — "AI should be open"</div>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-label">Parent</div><div class="stat-value">Meta</div></div>
+      <div class="stat"><div class="stat-label">Strategy</div><div class="stat-value">Open Source</div></div>
+      <div class="stat"><div class="stat-label">Flagship</div><div class="stat-value">Llama 4</div></div>
+      <div class="stat"><div class="stat-label">Languages</div><div class="stat-value">200+</div></div>
+    </div>
+    <p>Meta's Llama models are the <b>most successful open-source AI models in history</b>. By releasing their models freely, Meta has created an enormous ecosystem of developers, researchers, and companies building on top of Llama. Their latest, <b>Llama 4</b>, uses Mixture-of-Experts (MoE) architecture, supports 200 languages, and was trained on 30+ trillion tokens.</p>
+    <p>Meta's open-source strategy isn't altruism — it's <b>competitive disruption</b>. By giving away frontier-quality models for free, they commoditize the model layer, making it harder for competitors to charge premium prices for API access. Meanwhile, Meta benefits from community improvements and integrates AI into Instagram, WhatsApp, and Facebook.</p>
+    <div class="key-move">
+      <b>Key strategic move:</b> <b>Commoditize the complement.</b> If AI models are free, the value shifts to data (Meta has billions of users), distribution (3.9B monthly active people), and applications. Open-source Llama weakens OpenAI's and Google's pricing power while strengthening Meta's platform moat.
+    </div>
+  </div>
+
+  <!-- ===== SECTION 3: THE CHALLENGERS ===== -->
+  <div class="divider"><span>The Challengers</span></div>
+
+  <div class="challengers-grid">
+    <div class="challenger">
+      <div class="ch-header">
+        <div class="ch-icon" style="background:linear-gradient(135deg,#F97316,#EA580C);">Mi</div>
+        <div class="ch-name">Mistral AI</div>
+      </div>
+      <div class="ch-meta">France · $13.8B valuation · ~300M ARR</div>
+      <div class="ch-desc"><b>Europe's champion.</b> Founded in 2023 by ex-Meta and ex-DeepMind researchers. Known for the fastest inference among frontier models. CEO Arthur Mensch's philosophy: "Too many GPUs makes you lazy." Their mixed approach (some models open, some closed) gives them flexibility. Key advantage: <b>EU data sovereignty</b> for European enterprises.</div>
+    </div>
+
+    <div class="challenger">
+      <div class="ch-header">
+        <div class="ch-icon" style="background:linear-gradient(135deg,#64748B,#475569);">X</div>
+        <div class="ch-name">xAI</div>
+      </div>
+      <div class="ch-meta">USA · ~$50B valuation · Elon Musk</div>
+      <div class="ch-desc"><b>The wild card.</b> Elon Musk's AI company, launched in 2023. Their Grok 4.1 holds the <b>#1 position on LMArena</b> with a 65% reduction in hallucinations. Access to <b>real-time data from X (Twitter)</b> gives them a unique advantage. Rapidly scaled compute with the "Colossus" data center — reportedly the largest AI training cluster ever built.</div>
+    </div>
+
+    <div class="challenger">
+      <div class="ch-header">
+        <div class="ch-icon" style="background:linear-gradient(135deg,#06B6D4,#0891B2);">D</div>
+        <div class="ch-name">DeepSeek</div>
+      </div>
+      <div class="ch-meta">China · Private · Open Source</div>
+      <div class="ch-desc"><b>The efficiency disruptor.</b> Shocked the world by training a GPT-4-level model for just <b>$6 million</b> — vs. ~$100M+ for GPT-4. Their V3.2 model integrates thinking into tool-use and achieves <b>gold-level results in IMO and ICPC</b>. V4 (multimodal: text, image, video) is imminent. Their success challenged the "just throw more compute at it" thesis.</div>
+    </div>
+
+    <div class="challenger">
+      <div class="ch-header">
+        <div class="ch-icon" style="background:linear-gradient(135deg,#8B5CF6,#7C3AED);">C</div>
+        <div class="ch-name">Cohere</div>
+      </div>
+      <div class="ch-meta">Canada · $7B valuation · Enterprise Focus</div>
+      <div class="ch-desc"><b>The enterprise specialist.</b> While others chase consumer products, Cohere focuses on <b>enterprise AI</b> with 17,000+ customers. Their strength: multilingual models optimized for business use cases — search, classification, and retrieval across multiple languages. Not the flashiest, but quietly building a large enterprise business.</div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 4: OPEN vs CLOSED ===== -->
+  <div class="divider"><span>The Big Debate</span></div>
+
+  <div class="section-header">
+    <h2>Open Source vs. Closed Source</h2>
+    <div class="section-sub">The defining strategic question of the AI industry</div>
+  </div>
+
+  <div class="vs-grid">
+    <div class="vs-card open-card">
+      <h3>Open Source</h3>
+      <div class="vs-models">Llama · Mistral · DeepSeek · Qwen</div>
+      <ul>
+        <li class="pro"><b>Free to use and modify</b> — no API costs, no vendor lock-in</li>
+        <li class="pro"><b>Full control over data</b> — nothing leaves your servers</li>
+        <li class="pro"><b>Community innovation</b> — thousands of developers improve the models</li>
+        <li class="pro"><b>Fine-tuning freedom</b> — customize for your specific use case</li>
+        <li class="con"><b>Requires infrastructure</b> — you need GPUs to run them</li>
+        <li class="con"><b>Safety guardrails vary</b> — less consistent than managed APIs</li>
+      </ul>
+    </div>
+    <div class="vs-card closed-card">
+      <h3>Closed Source</h3>
+      <div class="vs-models">GPT · Claude · Gemini</div>
+      <ul>
+        <li class="pro"><b>Cutting-edge performance</b> — usually 6-12 months ahead</li>
+        <li class="pro"><b>Easy API access</b> — no infrastructure to manage</li>
+        <li class="pro"><b>Safety guardrails built in</b> — consistent, well-tested</li>
+        <li class="pro"><b>Continuous improvement</b> — models get better without you doing anything</li>
+        <li class="con"><b>Vendor lock-in risk</b> — dependent on provider's pricing and policies</li>
+        <li class="con"><b>Data privacy concerns</b> — queries may be processed on provider's servers</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="vs-verdict">
+    <b>The trend:</b> Open-source models are <b>rapidly closing the gap</b>. Llama 4 and DeepSeek V3.2 now match or beat GPT-4 on many benchmarks. The performance difference between the top 10 models shrank from 11.9% to just 5.4% in 2024. As open models approach frontier quality, the value proposition of closed models shifts from "better performance" to "easier integration, better safety, and managed infrastructure." The future likely isn't one or the other — it's <b>both, for different use cases</b>.
+  </div>
+
+  <!-- ===== SECTION 5: ECOSYSTEM ===== -->
+  <div class="divider"><span>The Bigger Picture</span></div>
+
+  <div class="section-header">
+    <h2>The AI Ecosystem</h2>
+    <div class="section-sub">It's not just about models — there are four layers powering the AI revolution</div>
+  </div>
+
+  <div class="ecosystem">
+    <div class="eco-layers">
+      <div class="eco-layer l-chips">
+        <div class="eco-label">Chips & Hardware</div>
+        <div class="eco-items">
+          <div class="eco-item">NVIDIA</div>
+          <div class="eco-item">AMD</div>
+          <div class="eco-item">Google TPU</div>
+          <div class="eco-item">Apple Silicon</div>
+          <div class="eco-item">Cerebras</div>
+        </div>
+        <div class="eco-desc">The physical foundation. NVIDIA's H100/B200 GPUs dominate — a single training run can cost $100M+ in compute.</div>
+      </div>
+
+      <div class="eco-layer l-cloud">
+        <div class="eco-label">Cloud & Compute</div>
+        <div class="eco-items">
+          <div class="eco-item">AWS</div>
+          <div class="eco-item">Azure</div>
+          <div class="eco-item">Google Cloud</div>
+          <div class="eco-item">Oracle</div>
+          <div class="eco-item">CoreWeave</div>
+        </div>
+        <div class="eco-desc">Rent the GPUs instead of buying them. Azure hosts OpenAI; AWS backs Anthropic; Google Cloud runs Gemini.</div>
+      </div>
+
+      <div class="eco-layer l-models">
+        <div class="eco-label">Model Labs</div>
+        <div class="eco-items">
+          <div class="eco-item">OpenAI</div>
+          <div class="eco-item">Anthropic</div>
+          <div class="eco-item">Google</div>
+          <div class="eco-item">Meta</div>
+          <div class="eco-item">Mistral</div>
+          <div class="eco-item">DeepSeek</div>
+          <div class="eco-item">xAI</div>
+        </div>
+        <div class="eco-desc">Train the models. This is where the frontier research happens — and where most of the attention goes.</div>
+      </div>
+
+      <div class="eco-layer l-apps">
+        <div class="eco-label">Applications</div>
+        <div class="eco-items">
+          <div class="eco-item">ChatGPT</div>
+          <div class="eco-item">Claude</div>
+          <div class="eco-item">Copilot</div>
+          <div class="eco-item">Cursor</div>
+          <div class="eco-item">Perplexity</div>
+          <div class="eco-item">Midjourney</div>
+          <div class="eco-item">Replit</div>
+        </div>
+        <div class="eco-desc">Where users interact with AI. The value is shifting here — from "who has the best model" to "who builds the best product."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left"><b>AI Agent Workshop</b> · Week 1</div>
+    <div class="footer-nav">
+      <a href="AI_Timeline.html" class="nav-link prev-link">← Part 1: AI Evolution</a>
+      <a href="#" class="nav-link next-link">Part 3: AI Agents →</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
